@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Private School Hub – Attendance</title>
+  <title>Private School Hub – Attendance & Grades</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body {
@@ -150,6 +150,9 @@
     .status-select {
       width: auto;
     }
+    .grade-input {
+      width: 80px;
+    }
     .summary {
       font-size: 0.8rem;
       margin-top: 6px;
@@ -243,7 +246,7 @@
   <div id="lockScreen" class="lock-screen">
     <div class="lock-card">
       <h2 id="lockTitle">Private School Hub – Lock</h2>
-      <p id="lockSubtitle">Set a 4-digit PIN to protect attendance data on this device.</p>
+      <p id="lockSubtitle">Set a 4-digit PIN to protect data on this device.</p>
       <input id="lockPinInput" type="password" maxlength="4" inputmode="numeric" />
       <div class="lock-buttons">
         <button id="lockPrimaryBtn" class="primary">Save PIN</button>
@@ -256,12 +259,12 @@
   <div class="page">
     <header>
       <div class="app-title">Private School Hub</div>
-      <div class="app-sub">All-in-one school tool – Attendance • Grades • Fees • Parent Portal (Attendance module v1)</div>
+      <div class="app-sub">All-in-one school tool – Attendance • Grades • Fees • Parent Portal (Attendance + Grades module v1)</div>
       <div class="badge">Developed by Bright TODAN</div>
 
       <div class="nav">
-        <button class="active">Attendance</button>
-        <button class="disabled">Grades (coming soon)</button>
+        <button id="navAttendance" class="active">Attendance</button>
+        <button id="navGrades">Grades</button>
         <button class="disabled">School Fees (coming soon)</button>
         <button class="disabled">Parent Portal (coming soon)</button>
       </div>
@@ -334,9 +337,71 @@
       </div>
     </section>
 
+    <!-- GRADES MODULE -->
+    <section id="grades" style="display:none;">
+      <!-- Class, subject, assessment -->
+      <div class="card">
+        <div class="card-title">Class, Subject & Assessment</div>
+        <div class="row">
+          <div class="col">
+            <label for="gradesClassName">Class name (same as Attendance)</label>
+            <input id="gradesClassName" type="text" placeholder="Example: Form 2A" />
+          </div>
+          <div class="col">
+            <label for="subjectName">Subject</label>
+            <input id="subjectName" type="text" placeholder="Example: Mathematics" />
+          </div>
+        </div>
+        <div class="row" style="margin-top:8px;">
+          <div class="col">
+            <label for="assessmentName">Assessment name</label>
+            <input id="assessmentName" type="text" placeholder="Example: Test 1, Midterm, Exam Term 1" />
+          </div>
+          <div class="col">
+            <label for="maxScore">Maximum score (optional)</label>
+            <input id="maxScore" type="number" min="0" placeholder="Example: 20 or 100" />
+          </div>
+        </div>
+        <div class="btn-row">
+          <button id="gradesLoadClassBtn" class="secondary small">Load class list for grades</button>
+          <button id="gradesLoadGradesBtn" class="secondary small">Load saved grades</button>
+          <button id="gradesClearScoresBtn" class="danger small">Clear scores (keep students)</button>
+        </div>
+        <div class="summary" id="gradesInfo"></div>
+      </div>
+
+      <!-- Grades table -->
+      <div class="card">
+        <div class="card-title">Scores table</div>
+        <p style="font-size:0.8rem; color:#9ca3af; margin-top:0;">
+          After loading the class list, you will see all students with an empty score field.
+          Enter scores and save them for this subject & assessment.
+        </p>
+        <div style="overflow-x:auto;">
+          <table id="gradesTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Student name</th>
+                <th>Score</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- filled by JS -->
+            </tbody>
+          </table>
+        </div>
+        <div class="btn-row">
+          <button id="gradesSaveBtn" class="primary">Save grades</button>
+          <button id="gradesExportBtn" class="secondary small">Export grades CSV</button>
+        </div>
+        <div class="summary" id="gradesSummary"></div>
+      </div>
+    </section>
+
     <div class="footer">
       Data is stored in your browser (local only) on each device.<br/>
-      Private School Hub – Attendance module v1 – by Bright TODAN.
+      Private School Hub – Attendance & Grades v1 – by Bright TODAN.
     </div>
   </div>
 
@@ -344,7 +409,14 @@
     // Keys for localStorage
     const CLASS_KEY_PREFIX = "psh_class_";         // class list
     const ATT_KEY_PREFIX = "psh_attendance_";     // attendance data
+    const GRADES_KEY_PREFIX = "psh_grades_";      // grades data
     const PIN_KEY = "psh_pin_v1";                 // PIN lock
+
+    // Navigation elements
+    const navAttendanceBtn = document.getElementById("navAttendance");
+    const navGradesBtn = document.getElementById("navGrades");
+    const attendanceSection = document.getElementById("attendance");
+    const gradesSection = document.getElementById("grades");
 
     // Attendance elements
     const classNameEl = document.getElementById("className");
@@ -361,6 +433,20 @@
     const saveAttendanceBtn = document.getElementById("saveAttendanceBtn");
     const loadAttendanceBtn = document.getElementById("loadAttendanceBtn");
     const exportAttendanceBtn = document.getElementById("exportAttendanceBtn");
+
+    // Grades elements
+    const gradesClassNameEl = document.getElementById("gradesClassName");
+    const subjectNameEl = document.getElementById("subjectName");
+    const assessmentNameEl = document.getElementById("assessmentName");
+    const maxScoreEl = document.getElementById("maxScore");
+    const gradesLoadClassBtn = document.getElementById("gradesLoadClassBtn");
+    const gradesLoadGradesBtn = document.getElementById("gradesLoadGradesBtn");
+    const gradesClearScoresBtn = document.getElementById("gradesClearScoresBtn");
+    const gradesSaveBtn = document.getElementById("gradesSaveBtn");
+    const gradesExportBtn = document.getElementById("gradesExportBtn");
+    const gradesInfoEl = document.getElementById("gradesInfo");
+    const gradesSummaryEl = document.getElementById("gradesSummary");
+    const gradesTableBody = document.querySelector("#gradesTable tbody");
 
     // Lock elements
     const lockScreenEl = document.getElementById("lockScreen");
@@ -383,13 +469,22 @@
       return `${y}-${m}-${day}`;
     }
 
-    // Storage keys helpers
+    // Storage key helpers
     function storageKeyForClass(className) {
       return CLASS_KEY_PREFIX + className.toLowerCase().trim();
     }
 
     function storageKeyForAttendance(className, dateISO) {
       return ATT_KEY_PREFIX + className.toLowerCase().trim() + "_" + dateISO;
+    }
+
+    function storageKeyForGrades(className, subject, assessment) {
+      return (
+        GRADES_KEY_PREFIX +
+        className.toLowerCase().trim() + "_" +
+        subject.toLowerCase().trim() + "_" +
+        assessment.toLowerCase().trim()
+      );
     }
 
     // Parse student names
@@ -406,7 +501,7 @@
       return students;
     }
 
-    // CLASS LIST
+    // ---------------- ATTENDANCE LOGIC ----------------
     function loadClassList() {
       const className = classNameEl.value.trim();
       if (!className) {
@@ -468,7 +563,6 @@
       classInfoEl.textContent = `Class list deleted for "${className}".`;
     }
 
-    // ATTENDANCE TABLE
     function buildAttendanceTable(students, existingStatuses = null) {
       attendanceTableBody.innerHTML = "";
       if (!students || students.length === 0) {
@@ -643,7 +737,298 @@
       URL.revokeObjectURL(url);
     }
 
-    // ---------- PIN / LOCK LOGIC ----------
+    // ---------------- GRADES LOGIC ----------------
+    function loadClassForGrades() {
+      const className = gradesClassNameEl.value.trim();
+      if (!className) {
+        alert("Please enter the class name.");
+        return;
+      }
+      const key = storageKeyForClass(className);
+      const saved = localStorage.getItem(key);
+      if (!saved) {
+        gradesInfoEl.textContent = "No class list found for this class. Please create it in the Attendance tab.";
+        gradesTableBody.innerHTML = "";
+        gradesSummaryEl.textContent = "";
+        return;
+      }
+      const students = JSON.parse(saved);
+      gradesInfoEl.textContent = `Class list loaded for "${className}" – ${students.length} students.`;
+      buildGradesTable(students);
+    }
+
+    function buildGradesTable(students, existingScores = null) {
+      gradesTableBody.innerHTML = "";
+      if (!students || students.length === 0) {
+        gradesSummaryEl.textContent = "No students to show. Load a class list first.";
+        return;
+      }
+      students.forEach((name, index) => {
+        const tr = document.createElement("tr");
+
+        const tdIndex = document.createElement("td");
+        tdIndex.textContent = index + 1;
+
+        const tdName = document.createElement("td");
+        tdName.textContent = name;
+
+        const tdScore = document.createElement("td");
+        const input = document.createElement("input");
+        input.type = "number";
+        input.className = "grade-input";
+        input.min = "0";
+        if (maxScoreEl.value) {
+          input.max = maxScoreEl.value;
+        }
+        if (existingScores && Object.prototype.hasOwnProperty.call(existingScores, name)) {
+          input.value = existingScores[name];
+        }
+        tdScore.appendChild(input);
+
+        tr.appendChild(tdIndex);
+        tr.appendChild(tdName);
+        tr.appendChild(tdScore);
+        gradesTableBody.appendChild(tr);
+      });
+
+      updateGradesSummary();
+    }
+
+    function getCurrentGradesFromTable() {
+      const rows = gradesTableBody.querySelectorAll("tr");
+      const result = [];
+      rows.forEach((tr) => {
+        const nameCell = tr.children[1];
+        const scoreCell = tr.children[2];
+        const name = nameCell.textContent.trim();
+        const input = scoreCell.querySelector("input");
+        let score = null;
+        if (input && input.value !== "") {
+          const n = parseFloat(input.value);
+          if (!isNaN(n)) {
+            score = n;
+          }
+        }
+        result.push({ name, score });
+      });
+      return result;
+    }
+
+    function saveGrades() {
+      const className = gradesClassNameEl.value.trim();
+      const subject = subjectNameEl.value.trim();
+      const assessment = assessmentNameEl.value.trim();
+      if (!className) {
+        alert("Please enter the class name.");
+        return;
+      }
+      if (!subject) {
+        alert("Please enter the subject.");
+        return;
+      }
+      if (!assessment) {
+        alert("Please enter the assessment name.");
+        return;
+      }
+
+      const rows = gradesTableBody.querySelectorAll("tr");
+      if (rows.length === 0) {
+        alert("No students in the table. Load the class list first.");
+        return;
+      }
+
+      const grades = getCurrentGradesFromTable();
+      const hasAnyScore = grades.some(g => g.score !== null);
+      if (!hasAnyScore) {
+        const proceed = confirm("No scores entered. Save anyway?");
+        if (!proceed) return;
+      }
+
+      const maxScore = maxScoreEl.value ? parseFloat(maxScoreEl.value) : null;
+
+      const key = storageKeyForGrades(className, subject, assessment);
+      const payload = {
+        grades,
+        maxScore: maxScore
+      };
+      localStorage.setItem(key, JSON.stringify(payload));
+      updateGradesSummary();
+      alert(`Grades saved for ${className} – ${subject} – ${assessment}.`);
+      gradesInfoEl.textContent = `Saved grades for "${className}" – ${subject} – ${assessment}.`;
+    }
+
+    function loadGrades() {
+      const className = gradesClassNameEl.value.trim();
+      const subject = subjectNameEl.value.trim();
+      const assessment = assessmentNameEl.value.trim();
+      if (!className) {
+        alert("Please enter the class name.");
+        return;
+      }
+      if (!subject) {
+        alert("Please enter the subject.");
+        return;
+      }
+      if (!assessment) {
+        alert("Please enter the assessment name.");
+        return;
+      }
+
+      const classKey = storageKeyForClass(className);
+      const classSaved = localStorage.getItem(classKey);
+      if (!classSaved) {
+        alert("No class list found. Please create it in the Attendance tab first.");
+        return;
+      }
+      const students = JSON.parse(classSaved);
+
+      const key = storageKeyForGrades(className, subject, assessment);
+      const saved = localStorage.getItem(key);
+      if (!saved) {
+        alert("No grades found for this combination yet. Table will be empty.");
+        buildGradesTable(students);
+        gradesInfoEl.textContent = `No previous grades; starting fresh for "${className}" – ${subject} – ${assessment}.`;
+        return;
+      }
+
+      const payload = JSON.parse(saved);
+      const gradesArr = payload.grades || [];
+      const savedMax = payload.maxScore || null;
+      if (savedMax !== null) {
+        maxScoreEl.value = savedMax;
+      }
+
+      const scoreMap = {};
+      gradesArr.forEach((g) => {
+        scoreMap[g.name] = g.score;
+      });
+
+      buildGradesTable(students, scoreMap);
+      gradesInfoEl.textContent = `Loaded grades for "${className}" – ${subject} – ${assessment}.`;
+      updateGradesSummary();
+    }
+
+    function clearScores() {
+      const rows = gradesTableBody.querySelectorAll("tr");
+      if (rows.length === 0) {
+        alert("No students loaded yet.");
+        return;
+      }
+      if (!confirm("Clear all scores (students will remain)?")) return;
+      rows.forEach((tr) => {
+        const input = tr.children[2].querySelector("input");
+        if (input) input.value = "";
+      });
+      updateGradesSummary();
+    }
+
+    function updateGradesSummary() {
+      const grades = getCurrentGradesFromTable();
+      const numericScores = grades
+        .map(g => g.score)
+        .filter(s => typeof s === "number" && !isNaN(s));
+
+      const totalStudents = grades.length;
+      const countWithScore = numericScores.length;
+
+      if (totalStudents === 0) {
+        gradesSummaryEl.textContent = "No students loaded yet.";
+        return;
+      }
+
+      if (countWithScore === 0) {
+        gradesSummaryEl.textContent =
+          `Students: ${totalStudents} | No scores entered yet.`;
+        return;
+      }
+
+      const sum = numericScores.reduce((a, b) => a + b, 0);
+      const avg = sum / countWithScore;
+      const min = Math.min(...numericScores);
+      const max = Math.max(...numericScores);
+      const maxScore = maxScoreEl.value ? parseFloat(maxScoreEl.value) : null;
+
+      let text = `Students: ${totalStudents} | With score: ${countWithScore} | Average: ${avg.toFixed(2)} | Min: ${min} | Max: ${max}`;
+      if (maxScore && maxScore > 0) {
+        const avgPercent = (avg / maxScore) * 100;
+        text += ` | Average: ${avgPercent.toFixed(1)}% of ${maxScore}`;
+      }
+
+      gradesSummaryEl.textContent = text;
+    }
+
+    function exportGradesCSV() {
+      const className = gradesClassNameEl.value.trim();
+      const subject = subjectNameEl.value.trim();
+      const assessment = assessmentNameEl.value.trim();
+      if (!className) {
+        alert("Please enter the class name.");
+        return;
+      }
+      if (!subject) {
+        alert("Please enter the subject.");
+        return;
+      }
+      if (!assessment) {
+        alert("Please enter the assessment name.");
+        return;
+      }
+
+      const grades = getCurrentGradesFromTable();
+      if (grades.length === 0) {
+        alert("No students in the table.");
+        return;
+      }
+
+      const maxScore = maxScoreEl.value ? parseFloat(maxScoreEl.value) : null;
+
+      const header = ["Class", "Subject", "Assessment", "Student name", "Score", "Max score"];
+      const rows = grades.map(item => [
+        className,
+        subject,
+        assessment,
+        item.name,
+        item.score !== null ? item.score : "",
+        maxScore !== null ? maxScore : ""
+      ]);
+
+      const csvContent = [header, ...rows]
+        .map(row => row
+          .map(field => `"${String(field).replace(/"/g, '""')}"`)
+          .join(","))
+        .join("\r\n");
+
+      const safeClass = className.replace(/\s+/g, "_");
+      const safeSubject = subject.replace(/\s+/g, "_");
+      const safeAssessment = assessment.replace(/\s+/g, "_");
+
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `grades_${safeClass}_${safeSubject}_${safeAssessment}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // ---------------- NAVIGATION ----------------
+    function switchToAttendance() {
+      navAttendanceBtn.classList.add("active");
+      navGradesBtn.classList.remove("active");
+      attendanceSection.style.display = "block";
+      gradesSection.style.display = "none";
+    }
+
+    function switchToGrades() {
+      navGradesBtn.classList.add("active");
+      navAttendanceBtn.classList.remove("active");
+      attendanceSection.style.display = "none";
+      gradesSection.style.display = "block";
+    }
+
+    // ---------------- PIN / LOCK LOGIC ----------------
     function loadPin() {
       savedPin = localStorage.getItem(PIN_KEY);
     }
@@ -704,17 +1089,15 @@
     function handleLockReset() {
       const sure = confirm("This will erase ALL Private School Hub data and PIN on this device. Continue?");
       if (!sure) return;
-      localStorage.removeItem(PIN_KEY);
-      localStorage.removeItem(CLASS_KEY_PREFIX); // prefix, but to be safe we clear everything:
-      // Simpler: clear all localStorage for this origin
       localStorage.clear();
       location.reload();
     }
 
-    // ---------- APP INIT ----------
+    // ---------------- APP INIT ----------------
     function initAppLogic() {
       attDateEl.value = todayISO();
 
+      // Attendance
       saveClassBtn.addEventListener("click", saveClassList);
       loadClassBtn.addEventListener("click", loadClassList);
       clearClassBtn.addEventListener("click", clearClassList);
@@ -727,6 +1110,23 @@
           updateAttendanceSummary();
         }
       });
+
+      // Grades
+      gradesLoadClassBtn.addEventListener("click", loadClassForGrades);
+      gradesLoadGradesBtn.addEventListener("click", loadGrades);
+      gradesClearScoresBtn.addEventListener("click", clearScores);
+      gradesSaveBtn.addEventListener("click", saveGrades);
+      gradesExportBtn.addEventListener("click", exportGradesCSV);
+
+      gradesTableBody.addEventListener("input", (e) => {
+        if (e.target.classList.contains("grade-input")) {
+          updateGradesSummary();
+        }
+      });
+
+      // Navigation
+      navAttendanceBtn.addEventListener("click", switchToAttendance);
+      navGradesBtn.addEventListener("click", switchToGrades);
     }
 
     function bootApp() {
