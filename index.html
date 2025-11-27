@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Private School Hub – Attendance, Grades & Fees</title>
+  <title>Private School Hub – Attendance, Grades, Fees & Parent Portal</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body {
@@ -260,7 +260,7 @@
     <header>
       <div class="app-title">Private School Hub</div>
       <div class="app-sub">
-        All-in-one school tool – Attendance • Grades • Fees • Parent Portal (Attendance + Grades + Fees v1)
+        All-in-one school tool – Attendance • Grades • Fees • Parent Portal (v1)
       </div>
       <div class="badge">Developed by Bright TODAN</div>
 
@@ -268,7 +268,7 @@
         <button id="navAttendance" class="active">Attendance</button>
         <button id="navGrades">Grades</button>
         <button id="navFees">School Fees</button>
-        <button class="disabled">Parent Portal (coming soon)</button>
+        <button id="navParent">Parent Portal</button>
       </div>
     </header>
 
@@ -455,27 +455,79 @@
       </div>
     </section>
 
+    <!-- PARENT PORTAL MODULE -->
+    <section id="parent" style="display:none;">
+      <div class="card">
+        <div class="card-title">Parent Portal – Select student</div>
+        <p style="font-size:0.8rem; color:#9ca3af; margin-top:0;">
+          This view is read-only. It summarizes attendance, grades and fees for one student,
+          based on data already saved on this device.
+        </p>
+        <div class="row">
+          <div class="col">
+            <label for="parentClassName">Class name</label>
+            <input id="parentClassName" type="text" placeholder="Example: Form 2A" />
+          </div>
+          <div class="col">
+            <label for="parentStudentSelect">Student</label>
+            <select id="parentStudentSelect">
+              <option value="">-- Load class students first --</option>
+            </select>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button id="parentLoadClassBtn" class="secondary small">Load class students</button>
+          <button id="parentLoadDataBtn" class="primary small">Load student data</button>
+        </div>
+        <div class="summary" id="parentInfo"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Student summary (read-only)</div>
+        <p style="font-size:0.8rem; color:#9ca3af; margin-top:0;">
+          Use this section when meeting a parent. It shows only what has already been recorded
+          in Attendance, Grades and Fees modules on this device.
+        </p>
+
+        <h4 style="font-size:0.9rem; margin-top:4px;">Attendance history</h4>
+        <div id="parentAttendanceList" style="font-size:0.8rem; color:#e5e7eb;"></div>
+
+        <h4 style="font-size:0.9rem; margin-top:10px;">Grades</h4>
+        <div id="parentGradesList" style="font-size:0.8rem; color:#e5e7eb;"></div>
+
+        <h4 style="font-size:0.9rem; margin-top:10px;">School fees</h4>
+        <div id="parentFeesList" style="font-size:0.8rem; color:#e5e7eb;"></div>
+      </div>
+
+      <div class="summary">
+        Note: Parent Portal works offline and only shows data stored in this browser.
+        For backup, export CSV files regularly from each module.
+      </div>
+    </section>
+
     <div class="footer">
       Data is stored in your browser (local only) on each device.<br/>
-      Private School Hub – Attendance, Grades & Fees v1 – by Bright TODAN.
+      Private School Hub – Attendance, Grades, Fees & Parent Portal v1 – by Bright TODAN.
     </div>
   </div>
 
   <script>
     // Keys for localStorage
     const CLASS_KEY_PREFIX = "psh_class_";         // class list
-    const ATT_KEY_PREFIX = "psh_attendance_";     // attendance data
-    const GRADES_KEY_PREFIX = "psh_grades_";      // grades data
-    const FEES_KEY_PREFIX = "psh_fees_";          // fees data
-    const PIN_KEY = "psh_pin_v1";                 // PIN lock
+    const ATT_KEY_PREFIX = "psh_attendance_";      // attendance data
+    const GRADES_KEY_PREFIX = "psh_grades_";       // grades data
+    const FEES_KEY_PREFIX = "psh_fees_";           // fees data
+    const PIN_KEY = "psh_pin_v1";                  // PIN lock
 
     // Navigation elements
     const navAttendanceBtn = document.getElementById("navAttendance");
     const navGradesBtn = document.getElementById("navGrades");
     const navFeesBtn = document.getElementById("navFees");
+    const navParentBtn = document.getElementById("navParent");
     const attendanceSection = document.getElementById("attendance");
     const gradesSection = document.getElementById("grades");
     const feesSection = document.getElementById("fees");
+    const parentSection = document.getElementById("parent");
 
     // Attendance elements
     const classNameEl = document.getElementById("className");
@@ -519,6 +571,16 @@
     const feesSummaryEl = document.getElementById("feesSummary");
     const feesTableBody = document.querySelector("#feesTable tbody");
 
+    // Parent portal elements
+    const parentClassNameEl = document.getElementById("parentClassName");
+    const parentStudentSelectEl = document.getElementById("parentStudentSelect");
+    const parentLoadClassBtn = document.getElementById("parentLoadClassBtn");
+    const parentLoadDataBtn = document.getElementById("parentLoadDataBtn");
+    const parentInfoEl = document.getElementById("parentInfo");
+    const parentAttendanceListEl = document.getElementById("parentAttendanceList");
+    const parentGradesListEl = document.getElementById("parentGradesList");
+    const parentFeesListEl = document.getElementById("parentFeesList");
+
     // Lock elements
     const lockScreenEl = document.getElementById("lockScreen");
     const lockTitleEl = document.getElementById("lockTitle");
@@ -540,7 +602,7 @@
       return `${y}-${m}-${day}`;
     }
 
-    // Storage keys
+    // Storage key helpers
     function storageKeyForClass(className) {
       return CLASS_KEY_PREFIX + className.toLowerCase().trim();
     }
@@ -564,6 +626,15 @@
         className.toLowerCase().trim() + "_" +
         period.toLowerCase().trim()
       );
+    }
+
+    // Simple helper: turn "maths_term_1" → "Maths Term 1"
+    function prettyFromKeyPart(str) {
+      return str
+        .split("_")
+        .filter(Boolean)
+        .map(s => s.charAt(0).toUpperCase() + s.slice(1))
+        .join(" ");
     }
 
     // Parse student names
@@ -1400,32 +1471,211 @@
       URL.revokeObjectURL(url);
     }
 
+    // ---------------- PARENT PORTAL LOGIC ----------------
+    function loadClassForParent() {
+      const className = parentClassNameEl.value.trim();
+      if (!className) {
+        alert("Please enter the class name.");
+        return;
+      }
+      const key = storageKeyForClass(className);
+      const saved = localStorage.getItem(key);
+      if (!saved) {
+        parentInfoEl.textContent = "No class list found for this class. Please create it in the Attendance tab.";
+        parentStudentSelectEl.innerHTML = '<option value="">-- No students --</option>';
+        parentAttendanceListEl.textContent = "";
+        parentGradesListEl.textContent = "";
+        parentFeesListEl.textContent = "";
+        return;
+      }
+      const students = JSON.parse(saved);
+      parentStudentSelectEl.innerHTML = "";
+      students.forEach(name => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name;
+        parentStudentSelectEl.appendChild(opt);
+      });
+      parentInfoEl.textContent = `Loaded ${students.length} students for "${className}". Select one and click "Load student data".`;
+    }
+
+    function loadParentData() {
+      const className = parentClassNameEl.value.trim();
+      const studentName = parentStudentSelectEl.value;
+      if (!className) {
+        alert("Please enter the class name.");
+        return;
+      }
+      if (!studentName) {
+        alert("Please select a student.");
+        return;
+      }
+
+      const classLower = className.toLowerCase().trim();
+      parentInfoEl.textContent = `Summary for ${studentName} in "${className}".`;
+
+      parentAttendanceListEl.innerHTML = "";
+      parentGradesListEl.innerHTML = "";
+      parentFeesListEl.innerHTML = "";
+
+      // Attendance: scan all attendance keys for this class
+      const attPrefix = ATT_KEY_PREFIX + classLower + "_";
+      const attItems = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (!key.startsWith(attPrefix)) continue;
+        const datePart = key.substring(attPrefix.length);
+        try {
+          const records = JSON.parse(localStorage.getItem(key));
+          const match = records.find(r => r.name === studentName);
+          if (match) {
+            attItems.push({ date: datePart, status: match.status });
+          }
+        } catch (e) {}
+      }
+      attItems.sort((a, b) => a.date.localeCompare(b.date));
+      if (attItems.length === 0) {
+        parentAttendanceListEl.textContent = "No attendance records found for this student.";
+      } else {
+        const ul = document.createElement("ul");
+        ul.style.paddingLeft = "18px";
+        attItems.forEach(item => {
+          const li = document.createElement("li");
+          li.textContent = `${item.date}: ${item.status}`;
+          ul.appendChild(li);
+        });
+        parentAttendanceListEl.appendChild(ul);
+      }
+
+      // Grades: scan grades keys for this class
+      const gradesPrefix = GRADES_KEY_PREFIX + classLower + "_";
+      const gradeItems = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (!key.startsWith(gradesPrefix)) continue;
+        const rest = key.substring(gradesPrefix.length); // subjectlower_assessmentlower
+        const parts = rest.split("_");
+        if (parts.length < 2) continue;
+        const subjectLower = parts[0];
+        const assessmentLower = parts.slice(1).join("_");
+        try {
+          const payload = JSON.parse(localStorage.getItem(key));
+          const arr = (payload && payload.grades) || [];
+          const maxScore = payload && typeof payload.maxScore === "number" ? payload.maxScore : null;
+          const match = arr.find(g => g.name === studentName);
+          if (match && typeof match.score === "number") {
+            gradeItems.push({
+              subject: prettyFromKeyPart(subjectLower),
+              assessment: prettyFromKeyPart(assessmentLower),
+              score: match.score,
+              maxScore: maxScore
+            });
+          }
+        } catch (e) {}
+      }
+      if (gradeItems.length === 0) {
+        parentGradesListEl.textContent = "No grades found for this student.";
+      } else {
+        const ul = document.createElement("ul");
+        ul.style.paddingLeft = "18px";
+        gradeItems.forEach(item => {
+          const li = document.createElement("li");
+          if (item.maxScore) {
+            const percent = (item.score / item.maxScore) * 100;
+            li.textContent = `${item.subject} – ${item.assessment}: ${item.score} / ${item.maxScore} (${percent.toFixed(1)}%)`;
+          } else {
+            li.textContent = `${item.subject} – ${item.assessment}: ${item.score}`;
+          }
+          ul.appendChild(li);
+        });
+        parentGradesListEl.appendChild(ul);
+      }
+
+      // Fees: scan fees keys for this class
+      const feesPrefix = FEES_KEY_PREFIX + classLower + "_";
+      const feeItems = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (!key.startsWith(feesPrefix)) continue;
+        const periodLower = key.substring(feesPrefix.length);
+        try {
+          const payload = JSON.parse(localStorage.getItem(key));
+          const arr = (payload && payload.fees) || [];
+          const match = arr.find(f => f.name === studentName);
+          if (match) {
+            const total = typeof match.total === "number" ? match.total : null;
+            const paid = typeof match.paid === "number" ? match.paid : null;
+            const remaining = (total !== null && paid !== null) ? (total - paid) : null;
+            feeItems.push({
+              period: prettyFromKeyPart(periodLower),
+              total,
+              paid,
+              remaining
+            });
+          }
+        } catch (e) {}
+      }
+      if (feeItems.length === 0) {
+        parentFeesListEl.textContent = "No fees data found for this student.";
+      } else {
+        const ul = document.createElement("ul");
+        ul.style.paddingLeft = "18px";
+        feeItems.forEach(item => {
+          const li = document.createElement("li");
+          let text = `${item.period}: `;
+          if (item.total !== null) text += `Total ${item.total.toFixed(2)}; `;
+          if (item.paid !== null) text += `Paid ${item.paid.toFixed(2)}; `;
+          if (item.remaining !== null) text += `Remaining ${item.remaining.toFixed(2)}`;
+          li.textContent = text;
+          ul.appendChild(li);
+        });
+        parentFeesListEl.appendChild(ul);
+      }
+    }
+
     // ---------------- NAVIGATION ----------------
     function switchToAttendance() {
       navAttendanceBtn.classList.add("active");
       navGradesBtn.classList.remove("active");
       navFeesBtn.classList.remove("active");
+      navParentBtn.classList.remove("active");
       attendanceSection.style.display = "block";
       gradesSection.style.display = "none";
       feesSection.style.display = "none";
+      parentSection.style.display = "none";
     }
 
     function switchToGrades() {
       navGradesBtn.classList.add("active");
       navAttendanceBtn.classList.remove("active");
       navFeesBtn.classList.remove("active");
+      navParentBtn.classList.remove("active");
       attendanceSection.style.display = "none";
       gradesSection.style.display = "block";
       feesSection.style.display = "none";
+      parentSection.style.display = "none";
     }
 
     function switchToFees() {
       navFeesBtn.classList.add("active");
       navAttendanceBtn.classList.remove("active");
       navGradesBtn.classList.remove("active");
+      navParentBtn.classList.remove("active");
       attendanceSection.style.display = "none";
       gradesSection.style.display = "none";
       feesSection.style.display = "block";
+      parentSection.style.display = "none";
+    }
+
+    function switchToParent() {
+      navParentBtn.classList.add("active");
+      navAttendanceBtn.classList.remove("active");
+      navGradesBtn.classList.remove("active");
+      navFeesBtn.classList.remove("active");
+      attendanceSection.style.display = "none";
+      gradesSection.style.display = "none";
+      feesSection.style.display = "none";
+      parentSection.style.display = "block";
     }
 
     // ---------------- PIN / LOCK LOGIC ----------------
@@ -1535,10 +1785,15 @@
         }
       });
 
+      // Parent portal
+      parentLoadClassBtn.addEventListener("click", loadClassForParent);
+      parentLoadDataBtn.addEventListener("click", loadParentData);
+
       // Navigation
       navAttendanceBtn.addEventListener("click", switchToAttendance);
       navGradesBtn.addEventListener("click", switchToGrades);
       navFeesBtn.addEventListener("click", switchToFees);
+      navParentBtn.addEventListener("click", switchToParent);
     }
 
     function bootApp() {
