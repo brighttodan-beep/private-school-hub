@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Private School Hub – Attendance & Grades</title>
+  <title>Private School Hub – Attendance, Grades & Fees</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body {
@@ -150,8 +150,8 @@
     .status-select {
       width: auto;
     }
-    .grade-input {
-      width: 80px;
+    .grade-input, .fee-input {
+      width: 90px;
     }
     .summary {
       font-size: 0.8rem;
@@ -259,13 +259,15 @@
   <div class="page">
     <header>
       <div class="app-title">Private School Hub</div>
-      <div class="app-sub">All-in-one school tool – Attendance • Grades • Fees • Parent Portal (Attendance + Grades module v1)</div>
+      <div class="app-sub">
+        All-in-one school tool – Attendance • Grades • Fees • Parent Portal (Attendance + Grades + Fees v1)
+      </div>
       <div class="badge">Developed by Bright TODAN</div>
 
       <div class="nav">
         <button id="navAttendance" class="active">Attendance</button>
         <button id="navGrades">Grades</button>
-        <button class="disabled">School Fees (coming soon)</button>
+        <button id="navFees">School Fees</button>
         <button class="disabled">Parent Portal (coming soon)</button>
       </div>
     </header>
@@ -399,9 +401,63 @@
       </div>
     </section>
 
+    <!-- FEES MODULE -->
+    <section id="fees" style="display:none;">
+      <!-- Class & period -->
+      <div class="card">
+        <div class="card-title">Class & Fee Period</div>
+        <div class="row">
+          <div class="col">
+            <label for="feesClassName">Class name (same as Attendance)</label>
+            <input id="feesClassName" type="text" placeholder="Example: Form 2A" />
+          </div>
+          <div class="col">
+            <label for="feePeriod">Fee period / term</label>
+            <input id="feePeriod" type="text" placeholder="Example: 2025-2026 Term 1" />
+          </div>
+        </div>
+        <div class="btn-row">
+          <button id="feesLoadClassBtn" class="secondary small">Load class list for fees</button>
+          <button id="feesLoadDataBtn" class="secondary small">Load saved fees for this period</button>
+          <button id="feesClearAmountsBtn" class="danger small">Clear amounts (keep students)</button>
+        </div>
+        <div class="summary" id="feesInfo"></div>
+      </div>
+
+      <!-- Fees table -->
+      <div class="card">
+        <div class="card-title">School fees table</div>
+        <p style="font-size:0.8rem; color:#9ca3af; margin-top:0;">
+          After loading the class list, set the total school fees and amount paid for each student.
+          Remaining balance is calculated automatically.
+        </p>
+        <div style="overflow-x:auto;">
+          <table id="feesTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Student name</th>
+                <th>Total fee</th>
+                <th>Paid</th>
+                <th>Remaining</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- filled by JS -->
+            </tbody>
+          </table>
+        </div>
+        <div class="btn-row">
+          <button id="feesSaveBtn" class="primary">Save fees</button>
+          <button id="feesExportBtn" class="secondary small">Export fees CSV</button>
+        </div>
+        <div class="summary" id="feesSummary"></div>
+      </div>
+    </section>
+
     <div class="footer">
       Data is stored in your browser (local only) on each device.<br/>
-      Private School Hub – Attendance & Grades v1 – by Bright TODAN.
+      Private School Hub – Attendance, Grades & Fees v1 – by Bright TODAN.
     </div>
   </div>
 
@@ -410,13 +466,16 @@
     const CLASS_KEY_PREFIX = "psh_class_";         // class list
     const ATT_KEY_PREFIX = "psh_attendance_";     // attendance data
     const GRADES_KEY_PREFIX = "psh_grades_";      // grades data
+    const FEES_KEY_PREFIX = "psh_fees_";          // fees data
     const PIN_KEY = "psh_pin_v1";                 // PIN lock
 
     // Navigation elements
     const navAttendanceBtn = document.getElementById("navAttendance");
     const navGradesBtn = document.getElementById("navGrades");
+    const navFeesBtn = document.getElementById("navFees");
     const attendanceSection = document.getElementById("attendance");
     const gradesSection = document.getElementById("grades");
+    const feesSection = document.getElementById("fees");
 
     // Attendance elements
     const classNameEl = document.getElementById("className");
@@ -448,6 +507,18 @@
     const gradesSummaryEl = document.getElementById("gradesSummary");
     const gradesTableBody = document.querySelector("#gradesTable tbody");
 
+    // Fees elements
+    const feesClassNameEl = document.getElementById("feesClassName");
+    const feePeriodEl = document.getElementById("feePeriod");
+    const feesLoadClassBtn = document.getElementById("feesLoadClassBtn");
+    const feesLoadDataBtn = document.getElementById("feesLoadDataBtn");
+    const feesClearAmountsBtn = document.getElementById("feesClearAmountsBtn");
+    const feesSaveBtn = document.getElementById("feesSaveBtn");
+    const feesExportBtn = document.getElementById("feesExportBtn");
+    const feesInfoEl = document.getElementById("feesInfo");
+    const feesSummaryEl = document.getElementById("feesSummary");
+    const feesTableBody = document.querySelector("#feesTable tbody");
+
     // Lock elements
     const lockScreenEl = document.getElementById("lockScreen");
     const lockTitleEl = document.getElementById("lockTitle");
@@ -469,7 +540,7 @@
       return `${y}-${m}-${day}`;
     }
 
-    // Storage key helpers
+    // Storage keys
     function storageKeyForClass(className) {
       return CLASS_KEY_PREFIX + className.toLowerCase().trim();
     }
@@ -484,6 +555,14 @@
         className.toLowerCase().trim() + "_" +
         subject.toLowerCase().trim() + "_" +
         assessment.toLowerCase().trim()
+      );
+    }
+
+    function storageKeyForFees(className, period) {
+      return (
+        FEES_KEY_PREFIX +
+        className.toLowerCase().trim() + "_" +
+        period.toLowerCase().trim()
       );
     }
 
@@ -1013,19 +1092,340 @@
       URL.revokeObjectURL(url);
     }
 
+    // ---------------- FEES LOGIC ----------------
+    function loadClassForFees() {
+      const className = feesClassNameEl.value.trim();
+      if (!className) {
+        alert("Please enter the class name.");
+        return;
+      }
+      const key = storageKeyForClass(className);
+      const saved = localStorage.getItem(key);
+      if (!saved) {
+        feesInfoEl.textContent = "No class list found for this class. Please create it in the Attendance tab.";
+        feesTableBody.innerHTML = "";
+        feesSummaryEl.textContent = "";
+        return;
+      }
+      const students = JSON.parse(saved);
+      feesInfoEl.textContent = `Class list loaded for "${className}" – ${students.length} students.`;
+      buildFeesTable(students);
+    }
+
+    function buildFeesTable(students, existingData = null) {
+      feesTableBody.innerHTML = "";
+      if (!students || students.length === 0) {
+        feesSummaryEl.textContent = "No students to show. Load a class list first.";
+        return;
+      }
+      students.forEach((name, index) => {
+        const tr = document.createElement("tr");
+
+        const tdIndex = document.createElement("td");
+        tdIndex.textContent = index + 1;
+
+        const tdName = document.createElement("td");
+        tdName.textContent = name;
+
+        const tdTotal = document.createElement("td");
+        const inputTotal = document.createElement("input");
+        inputTotal.type = "number";
+        inputTotal.className = "fee-input fee-total";
+        inputTotal.min = "0";
+
+        const tdPaid = document.createElement("td");
+        const inputPaid = document.createElement("input");
+        inputPaid.type = "number";
+        inputPaid.className = "fee-input fee-paid";
+        inputPaid.min = "0";
+
+        const tdRemaining = document.createElement("td");
+        tdRemaining.className = "fee-remaining";
+        tdRemaining.textContent = "";
+
+        if (existingData && existingData[name]) {
+          const data = existingData[name];
+          if (typeof data.total === "number") inputTotal.value = data.total;
+          if (typeof data.paid === "number") inputPaid.value = data.paid;
+        }
+
+        inputTotal.addEventListener("input", () => updateFeesRowRemaining(tr));
+        inputPaid.addEventListener("input", () => updateFeesRowRemaining(tr));
+
+        tdTotal.appendChild(inputTotal);
+        tdPaid.appendChild(inputPaid);
+        tr.appendChild(tdIndex);
+        tr.appendChild(tdName);
+        tr.appendChild(tdTotal);
+        tr.appendChild(tdPaid);
+        tr.appendChild(tdRemaining);
+        feesTableBody.appendChild(tr);
+      });
+
+      updateAllFeesRemaining();
+      updateFeesSummary();
+    }
+
+    function updateFeesRowRemaining(tr) {
+      const totalInput = tr.querySelector(".fee-total");
+      const paidInput = tr.querySelector(".fee-paid");
+      const remainingCell = tr.querySelector(".fee-remaining");
+
+      const total = totalInput && totalInput.value !== "" ? parseFloat(totalInput.value) : 0;
+      const paid = paidInput && paidInput.value !== "" ? parseFloat(paidInput.value) : 0;
+
+      if (isNaN(total) || isNaN(paid)) {
+        remainingCell.textContent = "";
+        return;
+      }
+      const remaining = total - paid;
+      remainingCell.textContent = remaining.toFixed(2);
+      updateFeesSummary();
+    }
+
+    function updateAllFeesRemaining() {
+      const rows = feesTableBody.querySelectorAll("tr");
+      rows.forEach((tr) => updateFeesRowRemaining(tr));
+    }
+
+    function getCurrentFeesFromTable() {
+      const rows = feesTableBody.querySelectorAll("tr");
+      const result = [];
+      rows.forEach((tr) => {
+        const nameCell = tr.children[1];
+        const totalInput = tr.querySelector(".fee-total");
+        const paidInput = tr.querySelector(".fee-paid");
+        const name = nameCell.textContent.trim();
+
+        let total = null;
+        let paid = null;
+
+        if (totalInput && totalInput.value !== "") {
+          const n = parseFloat(totalInput.value);
+          if (!isNaN(n)) total = n;
+        }
+        if (paidInput && paidInput.value !== "") {
+          const p = parseFloat(paidInput.value);
+          if (!isNaN(p)) paid = p;
+        }
+
+        result.push({ name, total, paid });
+      });
+      return result;
+    }
+
+    function saveFees() {
+      const className = feesClassNameEl.value.trim();
+      const period = feePeriodEl.value.trim();
+      if (!className) {
+        alert("Please enter the class name.");
+        return;
+      }
+      if (!period) {
+        alert("Please enter the fee period / term.");
+        return;
+      }
+
+      const rows = feesTableBody.querySelectorAll("tr");
+      if (rows.length === 0) {
+        alert("No students in the table. Load the class list first.");
+        return;
+      }
+
+      const fees = getCurrentFeesFromTable();
+      const hasAnyData = fees.some(f => f.total !== null || f.paid !== null);
+      if (!hasAnyData) {
+        const proceed = confirm("No amounts entered. Save anyway?");
+        if (!proceed) return;
+      }
+
+      const key = storageKeyForFees(className, period);
+      const payload = { fees };
+      localStorage.setItem(key, JSON.stringify(payload));
+      updateFeesSummary();
+      alert(`Fees saved for ${className} – ${period}.`);
+      feesInfoEl.textContent = `Saved fees for "${className}" – ${period}.`;
+    }
+
+    function loadFeesData() {
+      const className = feesClassNameEl.value.trim();
+      const period = feePeriodEl.value.trim();
+      if (!className) {
+        alert("Please enter the class name.");
+        return;
+      }
+      if (!period) {
+        alert("Please enter the fee period / term.");
+        return;
+      }
+
+      const classKey = storageKeyForClass(className);
+      const classSaved = localStorage.getItem(classKey);
+      if (!classSaved) {
+        alert("No class list found. Please create it in the Attendance tab first.");
+        return;
+      }
+      const students = JSON.parse(classSaved);
+
+      const key = storageKeyForFees(className, period);
+      const saved = localStorage.getItem(key);
+      if (!saved) {
+        alert("No fees data found for this class & period. Table will start empty.");
+        buildFeesTable(students);
+        feesInfoEl.textContent = `No previous fees; starting fresh for "${className}" – ${period}.`;
+        return;
+      }
+
+      const payload = JSON.parse(saved);
+      const feesArr = payload.fees || [];
+      const dataMap = {};
+      feesArr.forEach((f) => {
+        dataMap[f.name] = {
+          total: f.total,
+          paid: f.paid
+        };
+      });
+
+      buildFeesTable(students, dataMap);
+      feesInfoEl.textContent = `Loaded fees for "${className}" – ${period}.`;
+      updateFeesSummary();
+    }
+
+    function clearFeesAmounts() {
+      const rows = feesTableBody.querySelectorAll("tr");
+      if (rows.length === 0) {
+        alert("No students loaded yet.");
+        return;
+      }
+      if (!confirm("Clear all fee amounts (students will remain)?")) return;
+      rows.forEach((tr) => {
+        const totalInput = tr.querySelector(".fee-total");
+        const paidInput = tr.querySelector(".fee-paid");
+        const remainingCell = tr.querySelector(".fee-remaining");
+        if (totalInput) totalInput.value = "";
+        if (paidInput) paidInput.value = "";
+        if (remainingCell) remainingCell.textContent = "";
+      });
+      updateFeesSummary();
+    }
+
+    function updateFeesSummary() {
+      const fees = getCurrentFeesFromTable();
+      if (fees.length === 0) {
+        feesSummaryEl.textContent = "No students loaded yet.";
+        return;
+      }
+
+      let totalFeeSum = 0;
+      let totalPaidSum = 0;
+      let totalRemainSum = 0;
+      let countWithTotal = 0;
+      let countWithPaid = 0;
+
+      fees.forEach((f) => {
+        if (typeof f.total === "number") {
+          totalFeeSum += f.total;
+          countWithTotal++;
+        }
+        if (typeof f.paid === "number") {
+          totalPaidSum += f.paid;
+          countWithPaid++;
+        }
+      });
+
+      totalRemainSum = totalFeeSum - totalPaidSum;
+
+      let text =
+        `Students: ${fees.length} | Total fee set (sum): ${totalFeeSum.toFixed(2)} | Total paid (sum): ${totalPaidSum.toFixed(2)} | Remaining (sum): ${totalRemainSum.toFixed(2)}`;
+
+      if (countWithTotal === 0 && countWithPaid === 0) {
+        text = `Students: ${fees.length} | No fee amounts entered yet.`;
+      }
+
+      feesSummaryEl.textContent = text;
+    }
+
+    function exportFeesCSV() {
+      const className = feesClassNameEl.value.trim();
+      const period = feePeriodEl.value.trim();
+      if (!className) {
+        alert("Please enter the class name.");
+        return;
+      }
+      if (!period) {
+        alert("Please enter the fee period / term.");
+        return;
+      }
+
+      const fees = getCurrentFeesFromTable();
+      if (fees.length === 0) {
+        alert("No students in the table.");
+        return;
+      }
+
+      const header = ["Class", "Period", "Student name", "Total fee", "Paid", "Remaining"];
+      const rows = fees.map(item => {
+        const total = typeof item.total === "number" ? item.total : "";
+        const paid = typeof item.paid === "number" ? item.paid : "";
+        const remaining = (typeof item.total === "number" && typeof item.paid === "number")
+          ? (item.total - item.paid).toFixed(2)
+          : "";
+        return [
+          className,
+          period,
+          item.name,
+          total,
+          paid,
+          remaining
+        ];
+      });
+
+      const csvContent = [header, ...rows]
+        .map(row => row
+          .map(field => `"${String(field).replace(/"/g, '""')}"`)
+          .join(","))
+        .join("\r\n");
+
+      const safeClass = className.replace(/\s+/g, "_");
+      const safePeriod = period.replace(/\s+/g, "_");
+
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `fees_${safeClass}_${safePeriod}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
     // ---------------- NAVIGATION ----------------
     function switchToAttendance() {
       navAttendanceBtn.classList.add("active");
       navGradesBtn.classList.remove("active");
+      navFeesBtn.classList.remove("active");
       attendanceSection.style.display = "block";
       gradesSection.style.display = "none";
+      feesSection.style.display = "none";
     }
 
     function switchToGrades() {
       navGradesBtn.classList.add("active");
       navAttendanceBtn.classList.remove("active");
+      navFeesBtn.classList.remove("active");
       attendanceSection.style.display = "none";
       gradesSection.style.display = "block";
+      feesSection.style.display = "none";
+    }
+
+    function switchToFees() {
+      navFeesBtn.classList.add("active");
+      navAttendanceBtn.classList.remove("active");
+      navGradesBtn.classList.remove("active");
+      attendanceSection.style.display = "none";
+      gradesSection.style.display = "none";
+      feesSection.style.display = "block";
     }
 
     // ---------------- PIN / LOCK LOGIC ----------------
@@ -1104,7 +1504,6 @@
       saveAttendanceBtn.addEventListener("click", saveAttendance);
       loadAttendanceBtn.addEventListener("click", loadAttendanceForDate);
       exportAttendanceBtn.addEventListener("click", exportAttendanceCSV);
-
       attendanceTableBody.addEventListener("change", (e) => {
         if (e.target.tagName === "SELECT") {
           updateAttendanceSummary();
@@ -1117,16 +1516,29 @@
       gradesClearScoresBtn.addEventListener("click", clearScores);
       gradesSaveBtn.addEventListener("click", saveGrades);
       gradesExportBtn.addEventListener("click", exportGradesCSV);
-
       gradesTableBody.addEventListener("input", (e) => {
         if (e.target.classList.contains("grade-input")) {
           updateGradesSummary();
         }
       });
 
+      // Fees
+      feesLoadClassBtn.addEventListener("click", loadClassForFees);
+      feesLoadDataBtn.addEventListener("click", loadFeesData);
+      feesClearAmountsBtn.addEventListener("click", clearFeesAmounts);
+      feesSaveBtn.addEventListener("click", saveFees);
+      feesExportBtn.addEventListener("click", exportFeesCSV);
+      feesTableBody.addEventListener("input", (e) => {
+        if (e.target.classList.contains("fee-input")) {
+          updateAllFeesRemaining();
+          updateFeesSummary();
+        }
+      });
+
       // Navigation
       navAttendanceBtn.addEventListener("click", switchToAttendance);
       navGradesBtn.addEventListener("click", switchToGrades);
+      navFeesBtn.addEventListener("click", switchToFees);
     }
 
     function bootApp() {
