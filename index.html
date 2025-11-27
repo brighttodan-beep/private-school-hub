@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Bright School Hub – Attendance</title>
+  <title>Private School Hub – Attendance</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body {
@@ -172,6 +172,65 @@
       color: #4ade80;
       margin-top: 4px;
     }
+
+    /* LOCK SCREEN */
+    .lock-screen {
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.96);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+    }
+    .lock-card {
+      background: #020617;
+      border-radius: 16px;
+      padding: 20px 16px;
+      border: 1px solid #1f2937;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.8);
+      max-width: 320px;
+      width: 100%;
+      text-align: center;
+    }
+    .lock-card h2 {
+      margin: 0 0 8px;
+      font-size: 1.1rem;
+    }
+    .lock-card p {
+      margin: 4px 0 10px;
+      font-size: 0.85rem;
+      color: #9ca3af;
+    }
+    .lock-card input {
+      width: 100%;
+      text-align: center;
+      letter-spacing: 0.3em;
+      font-size: 1.1rem;
+      padding: 8px;
+      border-radius: 999px;
+      border: 1px solid #1f2937;
+      background: #020617;
+      color: #e5e7eb;
+      margin-bottom: 10px;
+    }
+    .lock-card input:focus {
+      outline: none;
+      border-color: #22c55e;
+    }
+    .lock-buttons {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+    }
+    .lock-message {
+      font-size: 0.8rem;
+      color: #f97316;
+      min-height: 1em;
+    }
+
     @media (max-width: 600px) {
       .page {
         padding: 12px;
@@ -180,10 +239,24 @@
   </style>
 </head>
 <body>
+  <!-- PIN LOCK OVERLAY -->
+  <div id="lockScreen" class="lock-screen">
+    <div class="lock-card">
+      <h2 id="lockTitle">Private School Hub – Lock</h2>
+      <p id="lockSubtitle">Set a 4-digit PIN to protect attendance data on this device.</p>
+      <input id="lockPinInput" type="password" maxlength="4" inputmode="numeric" />
+      <div class="lock-buttons">
+        <button id="lockPrimaryBtn" class="primary">Save PIN</button>
+        <button id="lockResetBtn" class="danger small" style="display:none;">Reset data & PIN</button>
+      </div>
+      <p id="lockMessage" class="lock-message"></p>
+    </div>
+  </div>
+
   <div class="page">
     <header>
-      <div class="app-title">Bright School Hub</div>
-      <div class="app-sub">All-in-one school tool – Attendance • Grades • Fees • Parent Portal (Attendance v1 ready)</div>
+      <div class="app-title">Private School Hub</div>
+      <div class="app-sub">All-in-one school tool – Attendance • Grades • Fees • Parent Portal (Attendance module v1)</div>
       <div class="badge">Developed by Bright TODAN</div>
 
       <div class="nav">
@@ -262,15 +335,18 @@
     </section>
 
     <div class="footer">
-      Data is stored in your browser (local only) for each device.<br/>
-      Bright School Hub – Attendance module v1 – by Bright TODAN.
+      Data is stored in your browser (local only) on each device.<br/>
+      Private School Hub – Attendance module v1 – by Bright TODAN.
     </div>
   </div>
 
   <script>
-    const CLASS_KEY_PREFIX = "bsh_class_";          // class list
-    const ATT_KEY_PREFIX = "bsh_attendance_";      // attendance data
+    // Keys for localStorage
+    const CLASS_KEY_PREFIX = "psh_class_";         // class list
+    const ATT_KEY_PREFIX = "psh_attendance_";     // attendance data
+    const PIN_KEY = "psh_pin_v1";                 // PIN lock
 
+    // Attendance elements
     const classNameEl = document.getElementById("className");
     const attDateEl = document.getElementById("attDate");
     const studentsRawEl = document.getElementById("studentsRaw");
@@ -286,6 +362,19 @@
     const loadAttendanceBtn = document.getElementById("loadAttendanceBtn");
     const exportAttendanceBtn = document.getElementById("exportAttendanceBtn");
 
+    // Lock elements
+    const lockScreenEl = document.getElementById("lockScreen");
+    const lockTitleEl = document.getElementById("lockTitle");
+    const lockSubtitleEl = document.getElementById("lockSubtitle");
+    const lockPinInputEl = document.getElementById("lockPinInput");
+    const lockPrimaryBtnEl = document.getElementById("lockPrimaryBtn");
+    const lockResetBtnEl = document.getElementById("lockResetBtn");
+    const lockMessageEl = document.getElementById("lockMessage");
+
+    let appInitialized = false;
+    let savedPin = null;
+    let isUnlockMode = false;
+
     function todayISO() {
       const d = new Date();
       const y = d.getFullYear();
@@ -294,6 +383,7 @@
       return `${y}-${m}-${day}`;
     }
 
+    // Storage keys helpers
     function storageKeyForClass(className) {
       return CLASS_KEY_PREFIX + className.toLowerCase().trim();
     }
@@ -302,6 +392,7 @@
       return ATT_KEY_PREFIX + className.toLowerCase().trim() + "_" + dateISO;
     }
 
+    // Parse student names
     function parseStudents(rawText) {
       const lines = rawText.split("\n");
       const students = [];
@@ -315,6 +406,7 @@
       return students;
     }
 
+    // CLASS LIST
     function loadClassList() {
       const className = classNameEl.value.trim();
       if (!className) {
@@ -376,6 +468,7 @@
       classInfoEl.textContent = `Class list deleted for "${className}".`;
     }
 
+    // ATTENDANCE TABLE
     function buildAttendanceTable(students, existingStatuses = null) {
       attendanceTableBody.innerHTML = "";
       if (!students || students.length === 0) {
@@ -550,7 +643,76 @@
       URL.revokeObjectURL(url);
     }
 
-    function init() {
+    // ---------- PIN / LOCK LOGIC ----------
+    function loadPin() {
+      savedPin = localStorage.getItem(PIN_KEY);
+    }
+
+    function showLockScreen() {
+      loadPin();
+      lockScreenEl.style.display = "flex";
+      if (savedPin) {
+        isUnlockMode = true;
+        lockTitleEl.textContent = "Enter your PIN";
+        lockSubtitleEl.textContent = "This protects your Private School Hub data on this device.";
+        lockPrimaryBtnEl.textContent = "Unlock";
+        lockResetBtnEl.style.display = "inline-block";
+      } else {
+        isUnlockMode = false;
+        lockTitleEl.textContent = "Set your 4-digit PIN";
+        lockSubtitleEl.textContent = "This PIN will protect your Private School Hub data on this device.";
+        lockPrimaryBtnEl.textContent = "Save PIN";
+        lockResetBtnEl.style.display = "none";
+      }
+      lockPinInputEl.value = "";
+      lockMessageEl.textContent = "";
+      setTimeout(() => lockPinInputEl.focus(), 50);
+    }
+
+    function hideLockScreen() {
+      lockScreenEl.style.display = "none";
+    }
+
+    function handleLockPrimary() {
+      const pin = lockPinInputEl.value.trim();
+      if (pin.length !== 4) {
+        lockMessageEl.textContent = "PIN must be 4 digits.";
+        return;
+      }
+      if (!/^\d{4}$/.test(pin)) {
+        lockMessageEl.textContent = "Use only numbers.";
+        return;
+      }
+
+      if (!isUnlockMode) {
+        localStorage.setItem(PIN_KEY, pin);
+        savedPin = pin;
+        lockMessageEl.textContent = "";
+        bootApp();
+        hideLockScreen();
+      } else {
+        if (pin === savedPin) {
+          lockMessageEl.textContent = "";
+          bootApp();
+          hideLockScreen();
+        } else {
+          lockMessageEl.textContent = "Incorrect PIN.";
+        }
+      }
+    }
+
+    function handleLockReset() {
+      const sure = confirm("This will erase ALL Private School Hub data and PIN on this device. Continue?");
+      if (!sure) return;
+      localStorage.removeItem(PIN_KEY);
+      localStorage.removeItem(CLASS_KEY_PREFIX); // prefix, but to be safe we clear everything:
+      // Simpler: clear all localStorage for this origin
+      localStorage.clear();
+      location.reload();
+    }
+
+    // ---------- APP INIT ----------
+    function initAppLogic() {
       attDateEl.value = todayISO();
 
       saveClassBtn.addEventListener("click", saveClassList);
@@ -565,6 +727,23 @@
           updateAttendanceSummary();
         }
       });
+    }
+
+    function bootApp() {
+      if (appInitialized) return;
+      appInitialized = true;
+      initAppLogic();
+    }
+
+    function init() {
+      lockPrimaryBtnEl.addEventListener("click", handleLockPrimary);
+      lockResetBtnEl.addEventListener("click", handleLockReset);
+      lockPinInputEl.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          handleLockPrimary();
+        }
+      });
+      showLockScreen();
     }
 
     init();
