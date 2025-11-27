@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Bright School Hub – Attendance</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #020617;
+      color: #e5e7eb;
+      margin: 0;
+      padding: 0;
+    }
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+    header {
+      padding: 12px 0 4px;
+    }
+    .app-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+    }
+    .app-sub {
+      font-size: 0.85rem;
+      color: #9ca3af;
+    }
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 12px 0 16px;
+    }
+    .nav button {
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 1px solid #1f2937;
+      background: #020617;
+      color: #e5e7eb;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    .nav button.active {
+      background: #22c55e;
+      color: #020617;
+      border-color: #22c55e;
+      font-weight: 600;
+    }
+    .nav button.disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+    .card {
+      background: #0f172a;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 12px;
+      border: 1px solid #1f2937;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+    }
+    .card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    label {
+      display: block;
+      font-size: 0.8rem;
+      color: #9ca3af;
+      margin-bottom: 4px;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid #1f2937;
+      background: #020617;
+      color: #e5e7eb;
+      font-size: 0.85rem;
+    }
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: #22c55e;
+    }
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .col {
+      flex: 1;
+      min-width: 220px;
+    }
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button.primary {
+      background: #22c55e;
+      color: #020617;
+    }
+    button.secondary {
+      background: #111827;
+      color: #e5e7eb;
+      border: 1px solid #1f2937;
+    }
+    button.danger {
+      background: #ef4444;
+      color: #f9fafb;
+    }
+    button.small {
+      font-size: 0.75rem;
+      padding: 6px 10px;
+    }
+    button:active {
+      transform: scale(0.97);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+    }
+    th, td {
+      padding: 6px 4px;
+      border-bottom: 1px solid #1f2937;
+      text-align: left;
+    }
+    th {
+      color: #9ca3af;
+      font-weight: 500;
+    }
+    .status-select {
+      width: auto;
+    }
+    .summary {
+      font-size: 0.8rem;
+      margin-top: 6px;
+      color: #9ca3af;
+    }
+    .footer {
+      text-align: center;
+      font-size: 0.75rem;
+      color: #6b7280;
+      margin-top: 16px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      background: rgba(34,197,94,0.08);
+      color: #4ade80;
+      margin-top: 4px;
+    }
+    @media (max-width: 600px) {
+      .page {
+        padding: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div class="app-title">Bright School Hub</div>
+      <div class="app-sub">All-in-one school tool – Attendance • Grades • Fees • Parent Portal (Attendance v1 ready)</div>
+      <div class="badge">Developed by Bright TODAN</div>
+
+      <div class="nav">
+        <button class="active">Attendance</button>
+        <button class="disabled">Grades (coming soon)</button>
+        <button class="disabled">School Fees (coming soon)</button>
+        <button class="disabled">Parent Portal (coming soon)</button>
+      </div>
+    </header>
+
+    <!-- ATTENDANCE MODULE -->
+    <section id="attendance">
+      <!-- Class & Date -->
+      <div class="card">
+        <div class="card-title">Class & Date</div>
+        <div class="row">
+          <div class="col">
+            <label for="className">Class name (example: Form 2A, 6e B, Terminale D)</label>
+            <input id="className" type="text" placeholder="Enter class name..." />
+          </div>
+          <div class="col">
+            <label for="attDate">Date</label>
+            <input id="attDate" type="date" />
+          </div>
+        </div>
+        <div class="btn-row">
+          <button id="loadClassBtn" class="secondary small">Load class list</button>
+          <button id="clearClassBtn" class="danger small">Delete class list from this device</button>
+        </div>
+        <div class="summary" id="classInfo"></div>
+      </div>
+
+      <!-- Student list setup -->
+      <div class="card">
+        <div class="card-title">Student list for this class</div>
+        <p style="font-size:0.8rem; color:#9ca3af; margin-top:0;">
+          Type or paste student names, one per line. Example:<br/>
+          <em>1. Kossi Mawuli<br/>2. Ama Akosua<br/>3. John Mensah</em><br/>
+          Numbers are optional, they will be cleaned automatically.
+        </p>
+        <textarea id="studentsRaw" placeholder="One student per line..."></textarea>
+        <div class="btn-row">
+          <button id="saveClassBtn" class="primary">Save class list on this device</button>
+        </div>
+        <div class="summary" id="studentsCountInfo"></div>
+      </div>
+
+      <!-- Attendance table -->
+      <div class="card">
+        <div class="card-title">Today’s attendance</div>
+        <p style="font-size:0.8rem; color:#9ca3af; margin-top:0;">
+          After saving the class list, you will see all students below with a status:
+          <strong>Present</strong>, <strong>Absent</strong>, or <strong>Late</strong>.
+        </p>
+        <div style="overflow-x:auto;">
+          <table id="attendanceTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Student name</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- filled by JS -->
+            </tbody>
+          </table>
+        </div>
+        <div class="btn-row">
+          <button id="saveAttendanceBtn" class="primary">Save attendance for this date</button>
+          <button id="loadAttendanceBtn" class="secondary small">Load attendance for this date</button>
+          <button id="exportAttendanceBtn" class="secondary small">Export CSV for this date</button>
+        </div>
+        <div class="summary" id="attendanceSummary"></div>
+      </div>
+    </section>
+
+    <div class="footer">
+      Data is stored in your browser (local only) for each device.<br/>
+      Bright School Hub – Attendance module v1 – by Bright TODAN.
+    </div>
+  </div>
+
+  <script>
+    const CLASS_KEY_PREFIX = "bsh_class_";          // class list
+    const ATT_KEY_PREFIX = "bsh_attendance_";      // attendance data
+
+    const classNameEl = document.getElementById("className");
+    const attDateEl = document.getElementById("attDate");
+    const studentsRawEl = document.getElementById("studentsRaw");
+    const classInfoEl = document.getElementById("classInfo");
+    const studentsCountInfoEl = document.getElementById("studentsCountInfo");
+    const attendanceTableBody = document.querySelector("#attendanceTable tbody");
+    const attendanceSummaryEl = document.getElementById("attendanceSummary");
+
+    const saveClassBtn = document.getElementById("saveClassBtn");
+    const loadClassBtn = document.getElementById("loadClassBtn");
+    const clearClassBtn = document.getElementById("clearClassBtn");
+    const saveAttendanceBtn = document.getElementById("saveAttendanceBtn");
+    const loadAttendanceBtn = document.getElementById("loadAttendanceBtn");
+    const exportAttendanceBtn = document.getElementById("exportAttendanceBtn");
+
+    function todayISO() {
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
+
+    function storageKeyForClass(className) {
+      return CLASS_KEY_PREFIX + className.toLowerCase().trim();
+    }
+
+    function storageKeyForAttendance(className, dateISO) {
+      return ATT_KEY_PREFIX + className.toLowerCase().trim() + "_" + dateISO;
+    }
+
+    function parseStudents(rawText) {
+      const lines = rawText.split("\n");
+      const students = [];
+      for (let line of lines) {
+        let name = line.trim();
+        if (!name) continue;
+        name = name.replace(/^\d+[\).\-\s]*/, "");
+        if (!name) continue;
+        students.push(name);
+      }
+      return students;
+    }
+
+    function loadClassList() {
+      const className = classNameEl.value.trim();
+      if (!className) {
+        alert("Please enter the class name first.");
+        return;
+      }
+      const key = storageKeyForClass(className);
+      const saved = localStorage.getItem(key);
+      if (!saved) {
+        classInfoEl.textContent = "No class list found for this name on this device.";
+        attendanceTableBody.innerHTML = "";
+        studentsRawEl.value = "";
+        studentsCountInfoEl.textContent = "";
+        return;
+      }
+      const students = JSON.parse(saved);
+      studentsRawEl.value = students.join("\n");
+      studentsCountInfoEl.textContent = `Saved class list loaded: ${students.length} students.`;
+      classInfoEl.textContent = `Class list is stored locally for "${className}".`;
+      buildAttendanceTable(students);
+    }
+
+    function saveClassList() {
+      const className = classNameEl.value.trim();
+      if (!className) {
+        alert("Please enter the class name.");
+        return;
+      }
+      const students = parseStudents(studentsRawEl.value);
+      if (students.length === 0) {
+        alert("Please enter at least one student.");
+        return;
+      }
+      const key = storageKeyForClass(className);
+      localStorage.setItem(key, JSON.stringify(students));
+      classInfoEl.textContent = `Class list saved locally for "${className}".`;
+      studentsCountInfoEl.textContent = `${students.length} students saved.`;
+      buildAttendanceTable(students);
+    }
+
+    function clearClassList() {
+      const className = classNameEl.value.trim();
+      if (!className) {
+        alert("Please enter the class name.");
+        return;
+      }
+      const key = storageKeyForClass(className);
+      if (!localStorage.getItem(key)) {
+        alert("No class list found for this name.");
+        return;
+      }
+      if (!confirm(`Delete the class list for "${className}" from this device?`)) {
+        return;
+      }
+      localStorage.removeItem(key);
+      studentsRawEl.value = "";
+      studentsCountInfoEl.textContent = "";
+      attendanceTableBody.innerHTML = "";
+      classInfoEl.textContent = `Class list deleted for "${className}".`;
+    }
+
+    function buildAttendanceTable(students, existingStatuses = null) {
+      attendanceTableBody.innerHTML = "";
+      if (!students || students.length === 0) {
+        attendanceSummaryEl.textContent = "No students in this class yet.";
+        return;
+      }
+      students.forEach((name, index) => {
+        const tr = document.createElement("tr");
+
+        const tdIndex = document.createElement("td");
+        tdIndex.textContent = index + 1;
+
+        const tdName = document.createElement("td");
+        tdName.textContent = name;
+
+        const tdStatus = document.createElement("td");
+        const select = document.createElement("select");
+        select.className = "status-select";
+        ["Present", "Absent", "Late"].forEach((status) => {
+          const opt = document.createElement("option");
+          opt.value = status;
+          opt.textContent = status;
+          select.appendChild(opt);
+        });
+
+        if (existingStatuses && existingStatuses[name]) {
+          select.value = existingStatuses[name];
+        } else {
+          select.value = "Present";
+        }
+
+        tdStatus.appendChild(select);
+
+        tr.appendChild(tdIndex);
+        tr.appendChild(tdName);
+        tr.appendChild(tdStatus);
+        attendanceTableBody.appendChild(tr);
+      });
+
+      updateAttendanceSummary();
+    }
+
+    function getCurrentAttendanceFromTable() {
+      const rows = attendanceTableBody.querySelectorAll("tr");
+      const result = [];
+      rows.forEach((tr) => {
+        const nameCell = tr.children[1];
+        const selectCell = tr.children[2];
+        const name = nameCell.textContent.trim();
+        const select = selectCell.querySelector("select");
+        const status = select ? select.value : "Present";
+        result.push({ name, status });
+      });
+      return result;
+    }
+
+    function saveAttendance() {
+      const className = classNameEl.value.trim();
+      const dateVal = attDateEl.value;
+      if (!className) {
+        alert("Please enter the class name.");
+        return;
+      }
+      if (!dateVal) {
+        alert("Please select the date.");
+        return;
+      }
+      const students = parseStudents(studentsRawEl.value);
+      if (students.length === 0) {
+        alert("Please save a class list first.");
+        return;
+      }
+      const attendance = getCurrentAttendanceFromTable();
+      const key = storageKeyForAttendance(className, dateVal);
+      localStorage.setItem(key, JSON.stringify(attendance));
+      updateAttendanceSummary();
+      alert(`Attendance saved for ${className} on ${dateVal}.`);
+    }
+
+    function loadAttendanceForDate() {
+      const className = classNameEl.value.trim();
+      const dateVal = attDateEl.value;
+      if (!className) {
+        alert("Please enter the class name.");
+        return;
+      }
+      if (!dateVal) {
+        alert("Please select the date.");
+        return;
+      }
+
+      const classKey = storageKeyForClass(className);
+      const classSaved = localStorage.getItem(classKey);
+      if (!classSaved) {
+        alert("No class list found. Save the class list first.");
+        return;
+      }
+      const students = JSON.parse(classSaved);
+
+      const key = storageKeyForAttendance(className, dateVal);
+      const savedAtt = localStorage.getItem(key);
+      if (!savedAtt) {
+        alert("No attendance saved for this date yet. Table will use default (Present).");
+        buildAttendanceTable(students);
+        return;
+      }
+      const attendanceArr = JSON.parse(savedAtt);
+      const statusMap = {};
+      attendanceArr.forEach((item) => {
+        statusMap[item.name] = item.status;
+      });
+      buildAttendanceTable(students, statusMap);
+      updateAttendanceSummary();
+    }
+
+    function updateAttendanceSummary() {
+      const attendance = getCurrentAttendanceFromTable();
+      let present = 0, absent = 0, late = 0;
+      attendance.forEach((item) => {
+        if (item.status === "Present") present++;
+        else if (item.status === "Absent") absent++;
+        else if (item.status === "Late") late++;
+      });
+      const total = attendance.length;
+      if (total === 0) {
+        attendanceSummaryEl.textContent = "No attendance data yet.";
+        return;
+      }
+      attendanceSummaryEl.textContent =
+        `Total students: ${total} | Present: ${present} | Absent: ${absent} | Late: ${late}`;
+    }
+
+    function exportAttendanceCSV() {
+      const className = classNameEl.value.trim();
+      const dateVal = attDateEl.value;
+      if (!className) {
+        alert("Please enter the class name.");
+        return;
+      }
+      if (!dateVal) {
+        alert("Please select the date.");
+        return;
+      }
+      const attendance = getCurrentAttendanceFromTable();
+      if (attendance.length === 0) {
+        alert("No attendance data to export.");
+        return;
+      }
+
+      const header = ["Class", "Date", "Student name", "Status"];
+      const rows = attendance.map(item => [
+        className,
+        dateVal,
+        item.name,
+        item.status
+      ]);
+
+      const csvContent = [header, ...rows]
+        .map(row => row
+          .map(field => `"${String(field).replace(/"/g, '""')}"`)
+          .join(","))
+        .join("\r\n");
+
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `attendance_${className.replace(/\s+/g, "_")}_${dateVal}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function init() {
+      attDateEl.value = todayISO();
+
+      saveClassBtn.addEventListener("click", saveClassList);
+      loadClassBtn.addEventListener("click", loadClassList);
+      clearClassBtn.addEventListener("click", clearClassList);
+      saveAttendanceBtn.addEventListener("click", saveAttendance);
+      loadAttendanceBtn.addEventListener("click", loadAttendanceForDate);
+      exportAttendanceBtn.addEventListener("click", exportAttendanceCSV);
+
+      attendanceTableBody.addEventListener("change", (e) => {
+        if (e.target.tagName === "SELECT") {
+          updateAttendanceSummary();
+        }
+      });
+    }
+
+    init();
+  </script>
+</body>
+</html>
