@@ -373,7 +373,7 @@
     <header>
       <div class="app-title">Private School Hub</div>
       <div class="app-sub">
-        All-in-one school app – Attendance • Grades • Fees • Parent Portal (v2 – Local + Auth + Cloud Class Lists)
+        All-in-one school app – Attendance • Grades • Fees • Parent Portal (v3 – Local + Auth + Cloud Class & Attendance)
       </div>
       <div class="badge">Developed by Bright TODAN</div>
 
@@ -403,8 +403,8 @@
         </div>
         <div id="authMessage" class="auth-message"></div>
         <small>
-          Login uses Firebase Authentication. Class lists now sync to the cloud when you are signed in.
-          Attendance, grades and fees still use local storage for now.
+          Login uses Firebase Authentication. Class lists & attendance can sync to the cloud when you are signed in.
+          Grades and fees still use local storage for now.
         </small>
       </div>
 
@@ -475,7 +475,8 @@
         <div class="card-title">Today’s attendance</div>
         <p style="font-size:0.8rem; color:#4b5563; margin-top:0;">
           After saving the class list, you will see all students below with a status:
-          <strong>Present</strong>, <strong>Absent</strong>, or <strong>Late</strong>.
+          <strong>Present</strong>, <strong>Absent</strong>, or <strong>Late</strong>.<br/>
+          When you are signed in, attendance is also saved to the cloud.
         </p>
         <div style="overflow-x:auto;">
           <table id="attendanceTable">
@@ -703,7 +704,7 @@
         <div class="card-title">Student summary (read-only)</div>
         <p style="font-size:0.8rem; color:#4b5563; margin-top:0;">
           Use this section when meeting a parent. It shows only what has already been recorded
-          in Attendance, Grades and Fees modules on this device.
+          in Attendance, Grades and Fees modules on this device or synced for this browser.
         </p>
 
         <h4 style="font-size:0.9rem; margin-top:4px;">Attendance history</h4>
@@ -723,7 +724,7 @@
     </section>
 
     <div class="footer">
-      Data is stored locally in this browser, and class lists are backed up in the cloud when you are signed in.<br/>
+      Data is stored locally in this browser, and class lists & attendance are backed up in the cloud when you are signed in.<br/>
       Private School Hub – by Bright TODAN.
     </div>
   </div>
@@ -750,12 +751,21 @@
     firebase.initializeApp(firebaseConfig);
 
     const auth = firebase.auth();
-    const db = firebase.firestore(); // used for cloud class lists
+    const db = firebase.firestore(); // used for cloud class lists & attendance
     const CLOUD_CLASSES_COLLECTION = "classLists";
+    const CLOUD_ATTENDANCE_COLLECTION = "attendanceRecords";
 
     // Helpers for Firestore
     function getClassDocId(className) {
       return className.toLowerCase().trim().replace(/\s+/g, "_");
+    }
+
+    function getAttendanceDocId(className, dateISO) {
+      return (
+        className.toLowerCase().trim().replace(/\s+/g, "_") +
+        "__" +
+        dateISO
+      );
     }
 
     async function saveClassListToCloud(className, students) {
@@ -777,7 +787,7 @@
 
         return { ok: true };
       } catch (error) {
-        console.error("Cloud save error:", error);
+        console.error("Cloud save class error:", error);
         return { ok: false, error };
       }
     }
@@ -797,13 +807,58 @@
         const students = Array.isArray(data.students) ? data.students : [];
         return { ok: true, students };
       } catch (error) {
-        console.error("Cloud load error:", error);
+        console.error("Cloud load class error:", error);
+        return { ok: false, error };
+      }
+    }
+
+    async function saveAttendanceToCloud(className, dateISO, attendance) {
+      if (!auth.currentUser) {
+        return { ok: false, reason: "not_logged_in" };
+      }
+      const uid = auth.currentUser.uid;
+      const email = auth.currentUser.email || "";
+      const docId = getAttendanceDocId(className, dateISO);
+
+      try {
+        await db.collection(CLOUD_ATTENDANCE_COLLECTION).doc(docId).set({
+          className: className,
+          date: dateISO,
+          attendance: attendance,
+          ownerUid: uid,
+          updatedBy: email || uid,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
+        return { ok: true };
+      } catch (error) {
+        console.error("Cloud save attendance error:", error);
+        return { ok: false, error };
+      }
+    }
+
+    async function loadAttendanceFromCloud(className, dateISO) {
+      if (!auth.currentUser) {
+        return { ok: false, reason: "not_logged_in" };
+      }
+      const docId = getAttendanceDocId(className, dateISO);
+
+      try {
+        const snap = await db.collection(CLOUD_ATTENDANCE_COLLECTION).doc(docId).get();
+        if (!snap.exists) {
+          return { ok: false, reason: "not_found" };
+        }
+        const data = snap.data();
+        const attendance = Array.isArray(data.attendance) ? data.attendance : [];
+        return { ok: true, attendance };
+      } catch (error) {
+        console.error("Cloud load attendance error:", error);
         return { ok: false, error };
       }
     }
 
     /* -----------------------------------------------
-       APP LOGIC (localStorage + cloud for class lists)
+       APP LOGIC (localStorage + cloud)
     ------------------------------------------------ */
 
     // Keys for localStorage
@@ -876,7 +931,6 @@
     const parentFeesListEl = document.getElementById("parentFeesList");
 
     // Auth UI elements
-    const authBarEl = document.getElementById("authBar");
     const authStatusEl = document.getElementById("authStatus");
     const showAuthFormBtn = document.getElementById("showAuthFormBtn");
     const logoutBtn = document.getElementById("logoutBtn");
@@ -1208,7 +1262,7 @@
       return result;
     }
 
-    function saveAttendance() {
+    async function saveAttendance() {
       const className = classNameEl.value.trim();
       const dateVal = attDateEl.value;
       if (!className) {
@@ -1228,10 +1282,26 @@
       const key = storageKeyForAttendance(className, dateVal);
       localStorage.setItem(key, JSON.stringify(attendance));
       updateAttendanceSummary();
-      alert(`Attendance saved for ${className} on ${dateVal}.`);
+
+      let msg = `Attendance saved locally for ${className} on ${dateVal}.`;
+      attendanceSummaryEl.textContent = attendanceSummaryEl.textContent + " (Saved locally)";
+
+      // Cloud save
+      if (auth.currentUser) {
+        const cloudResult = await saveAttendanceToCloud(className, dateVal, attendance);
+        if (cloudResult.ok) {
+          msg += " Attendance also saved in cloud.";
+        } else {
+          msg += " Cloud save failed (rules/connection).";
+        }
+      } else {
+        msg += " Sign in if you want to sync across devices.";
+      }
+
+      alert(msg);
     }
 
-    function loadAttendanceForDate() {
+    async function loadAttendanceForDate() {
       const className = classNameEl.value.trim();
       const dateVal = attDateEl.value;
       if (!className) {
@@ -1251,14 +1321,38 @@
       }
       const students = JSON.parse(classSaved);
 
-      const key = storageKeyForAttendance(className, dateVal);
-      const savedAtt = localStorage.getItem(key);
-      if (!savedAtt) {
-        alert("No attendance saved for this date yet. Table will use default (Present).");
-        buildAttendanceTable(students);
-        return;
+      let attendanceArr = null;
+
+      // 1) Try cloud first if logged in
+      if (auth.currentUser) {
+        const cloudResult = await loadAttendanceFromCloud(className, dateVal);
+        if (cloudResult.ok && cloudResult.attendance.length > 0) {
+          attendanceArr = cloudResult.attendance;
+          attendanceSummaryEl.textContent = `Attendance loaded from cloud for ${className} on ${dateVal}.`;
+          // Sync to local too
+          const key = storageKeyForAttendance(className, dateVal);
+          localStorage.setItem(key, JSON.stringify(attendanceArr));
+        } else if (cloudResult.reason === "not_found") {
+          attendanceSummaryEl.textContent = `No cloud attendance found for ${className} on ${dateVal}. Trying local...`;
+        } else if (!cloudResult.ok) {
+          attendanceSummaryEl.textContent = "Could not load attendance from cloud (rules/connection). Using local if available.";
+        }
+      } else {
+        attendanceSummaryEl.textContent = "Not signed in. Using only local attendance on this device.";
       }
-      const attendanceArr = JSON.parse(savedAtt);
+
+      // 2) Fallback to local if needed
+      if (!attendanceArr) {
+        const key = storageKeyForAttendance(className, dateVal);
+        const savedAtt = localStorage.getItem(key);
+        if (!savedAtt) {
+          alert("No attendance saved for this date yet. Table will use default (Present).");
+          buildAttendanceTable(students);
+          return;
+        }
+        attendanceArr = JSON.parse(savedAtt);
+      }
+
       const statusMap = {};
       attendanceArr.forEach((item) => {
         statusMap[item.name] = item.status;
@@ -1957,7 +2051,7 @@
       parentGradesListEl.innerHTML = "";
       parentFeesListEl.innerHTML = "";
 
-      // Attendance history
+      // Attendance history (local only; cloud is synced into local when loaded)
       const attPrefix = ATT_KEY_PREFIX + classLower + "_";
       const attItems = [];
       for (let i = 0; i < localStorage.length; i++) {
@@ -2190,8 +2284,8 @@
       saveClassBtn.addEventListener("click", () => { saveClassList(); });
       loadClassBtn.addEventListener("click", () => { loadClassList(); });
       clearClassBtn.addEventListener("click", clearClassList);
-      saveAttendanceBtn.addEventListener("click", saveAttendance);
-      loadAttendanceBtn.addEventListener("click", loadAttendanceForDate);
+      saveAttendanceBtn.addEventListener("click", () => { saveAttendance(); });
+      loadAttendanceBtn.addEventListener("click", () => { loadAttendanceForDate(); });
       exportAttendanceBtn.addEventListener("click", exportAttendanceCSV);
       attendanceTableBody.addEventListener("change", (e) => {
         if (e.target.tagName === "SELECT") {
