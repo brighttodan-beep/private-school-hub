@@ -373,7 +373,7 @@
     <header>
       <div class="app-title">Private School Hub</div>
       <div class="app-sub">
-        All-in-one school app – Attendance • Grades • Fees • Parent Portal (v3 – Local + Auth + Cloud Class & Attendance)
+        All-in-one school app – Attendance • Grades • Fees • Parent Portal (v4 – Local + Auth + Cloud Class, Attendance & Fees)
       </div>
       <div class="badge">Developed by Bright TODAN</div>
 
@@ -403,8 +403,8 @@
         </div>
         <div id="authMessage" class="auth-message"></div>
         <small>
-          Login uses Firebase Authentication. Class lists & attendance can sync to the cloud when you are signed in.
-          Grades and fees still use local storage for now.
+          Login uses Firebase Authentication. Class lists, attendance and fees can sync to the cloud when you are signed in.
+          Grades still use local storage for now.
         </small>
       </div>
 
@@ -628,6 +628,7 @@
         <p style="font-size:0.8rem; color:#4b5563; margin-top:0;">
           After loading the class list, set the total school fees and amount paid for each student.
           Remaining balance is calculated automatically.
+          When you are signed in, fees are stored in the cloud plus locally.
         </p>
         <div style="overflow-x:auto;">
           <table id="feesTable">
@@ -659,7 +660,7 @@
         <div class="card-title">Parent Portal – Select student</div>
         <p style="font-size:0.8rem; color:#4b5563; margin-top:0;">
           This view is read-only. It summarizes attendance, grades and fees for one student,
-          based on data already saved on this device.
+          based on data already saved on this device (and synced from cloud when loaded).
         </p>
         <div class="row">
           <div class="col">
@@ -724,7 +725,7 @@
     </section>
 
     <div class="footer">
-      Data is stored locally in this browser, and class lists & attendance are backed up in the cloud when you are signed in.<br/>
+      Data is stored locally in this browser, and class lists, attendance and fees are backed up in the cloud when you are signed in.<br/>
       Private School Hub – by Bright TODAN.
     </div>
   </div>
@@ -751,23 +752,30 @@
     firebase.initializeApp(firebaseConfig);
 
     const auth = firebase.auth();
-    const db = firebase.firestore(); // used for cloud class lists & attendance
+    const db = firebase.firestore(); // used for cloud class lists, attendance & fees
+
     const CLOUD_CLASSES_COLLECTION = "classLists";
     const CLOUD_ATTENDANCE_COLLECTION = "attendanceRecords";
+    const CLOUD_FEES_COLLECTION = "feesRecords";
 
-    // Helpers for Firestore
+    // Helpers for Firestore doc IDs
+    function normalizeKey(str) {
+      return str.toLowerCase().trim().replace(/\s+/g, "_");
+    }
+
     function getClassDocId(className) {
-      return className.toLowerCase().trim().replace(/\s+/g, "_");
+      return normalizeKey(className);
     }
 
     function getAttendanceDocId(className, dateISO) {
-      return (
-        className.toLowerCase().trim().replace(/\s+/g, "_") +
-        "__" +
-        dateISO
-      );
+      return normalizeKey(className) + "__" + dateISO;
     }
 
+    function getFeesDocId(className, period) {
+      return normalizeKey(className) + "__" + normalizeKey(period);
+    }
+
+    // Cloud: class lists
     async function saveClassListToCloud(className, students) {
       if (!auth.currentUser) {
         return { ok: false, reason: "not_logged_in" };
@@ -812,6 +820,7 @@
       }
     }
 
+    // Cloud: attendance
     async function saveAttendanceToCloud(className, dateISO, attendance) {
       if (!auth.currentUser) {
         return { ok: false, reason: "not_logged_in" };
@@ -853,6 +862,52 @@
         return { ok: true, attendance };
       } catch (error) {
         console.error("Cloud load attendance error:", error);
+        return { ok: false, error };
+      }
+    }
+
+    // Cloud: fees
+    async function saveFeesToCloud(className, period, fees) {
+      if (!auth.currentUser) {
+        return { ok: false, reason: "not_logged_in" };
+      }
+      const uid = auth.currentUser.uid;
+      const email = auth.currentUser.email || "";
+      const docId = getFeesDocId(className, period);
+
+      try {
+        await db.collection(CLOUD_FEES_COLLECTION).doc(docId).set({
+          className: className,
+          period: period,
+          fees: fees,
+          ownerUid: uid,
+          updatedBy: email || uid,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
+        return { ok: true };
+      } catch (error) {
+        console.error("Cloud save fees error:", error);
+        return { ok: false, error };
+      }
+    }
+
+    async function loadFeesFromCloud(className, period) {
+      if (!auth.currentUser) {
+        return { ok: false, reason: "not_logged_in" };
+      }
+      const docId = getFeesDocId(className, period);
+
+      try {
+        const snap = await db.collection(CLOUD_FEES_COLLECTION).doc(docId).get();
+        if (!snap.exists) {
+          return { ok: false, reason: "not_found" };
+        }
+        const data = snap.data();
+        const fees = Array.isArray(data.fees) ? data.fees : [];
+        return { ok: true, fees };
+      } catch (error) {
+        console.error("Cloud load fees error:", error);
         return { ok: false, error };
       }
     }
@@ -963,27 +1018,27 @@
     }
 
     function storageKeyForClass(className) {
-      return CLASS_KEY_PREFIX + className.toLowerCase().trim();
+      return CLASS_KEY_PREFIX + normalizeKey(className);
     }
 
     function storageKeyForAttendance(className, dateISO) {
-      return ATT_KEY_PREFIX + className.toLowerCase().trim() + "_" + dateISO;
+      return ATT_KEY_PREFIX + normalizeKey(className) + "_" + dateISO;
     }
 
     function storageKeyForGrades(className, subject, assessment) {
       return (
         GRADES_KEY_PREFIX +
-        className.toLowerCase().trim() + "_" +
-        subject.toLowerCase().trim() + "_" +
-        assessment.toLowerCase().trim()
+        normalizeKey(className) + "_" +
+        normalizeKey(subject) + "_" +
+        normalizeKey(assessment)
       );
     }
 
     function storageKeyForFees(className, period) {
       return (
         FEES_KEY_PREFIX +
-        className.toLowerCase().trim() + "_" +
-        period.toLowerCase().trim()
+        normalizeKey(className) + "_" +
+        normalizeKey(period)
       );
     }
 
@@ -1696,7 +1751,7 @@
       URL.revokeObjectURL(url);
     }
 
-    // ---------------- FEES LOGIC ----------------
+    // ---------------- FEES LOGIC (LOCAL + CLOUD) ----------------
     function loadClassForFees() {
       const className = feesClassNameEl.value.trim();
       if (!className) {
@@ -1818,7 +1873,7 @@
       return result;
     }
 
-    function saveFees() {
+    async function saveFees() {
       const className = feesClassNameEl.value.trim();
       const period = feePeriodEl.value.trim();
       if (!className) {
@@ -1847,11 +1902,30 @@
       const payload = { fees };
       localStorage.setItem(key, JSON.stringify(payload));
       updateFeesSummary();
-      alert(`Fees saved for ${className} – ${period}.`);
-      feesInfoEl.textContent = `Saved fees for "${className}" – ${period}.`;
+
+      let msg = `Fees saved locally for ${className} – ${period}.`;
+      feesInfoEl.textContent = `Fees saved locally for "${className}" – ${period}.`;
+
+      // Cloud save
+      if (auth.currentUser) {
+        feesInfoEl.textContent += " Saving to cloud...";
+        const cloudResult = await saveFeesToCloud(className, period, fees);
+        if (cloudResult.ok) {
+          feesInfoEl.textContent = `Fees saved locally and in cloud for "${className}" – ${period}.`;
+          msg += " Fees also saved in cloud.";
+        } else {
+          feesInfoEl.textContent = `Fees saved locally for "${className}" – ${period}. Cloud save failed (rules/connection).`;
+          msg += " Cloud save failed (rules/connection).";
+        }
+      } else {
+        feesInfoEl.textContent += " Sign in if you want cloud backup and multi-device access.";
+        msg += " Sign in if you want to sync across devices.";
+      }
+
+      alert(msg);
     }
 
-    function loadFeesData() {
+    async function loadFeesData() {
       const className = feesClassNameEl.value.trim();
       const period = feePeriodEl.value.trim();
       if (!className) {
@@ -1871,17 +1945,41 @@
       }
       const students = JSON.parse(classSaved);
 
-      const key = storageKeyForFees(className, period);
-      const saved = localStorage.getItem(key);
-      if (!saved) {
-        alert("No fees data found for this class & period. Table will start empty.");
-        buildFeesTable(students);
-        feesInfoEl.textContent = `No previous fees; starting fresh for "${className}" – ${period}.`;
-        return;
+      let feesArr = null;
+
+      // 1) Try cloud first if logged in
+      if (auth.currentUser) {
+        const cloudResult = await loadFeesFromCloud(className, period);
+        if (cloudResult.ok && cloudResult.fees.length > 0) {
+          feesArr = cloudResult.fees;
+          feesInfoEl.textContent = `Fees loaded from cloud for "${className}" – ${period}.`;
+          // Sync to local
+          const key = storageKeyForFees(className, period);
+          localStorage.setItem(key, JSON.stringify({ fees: feesArr }));
+        } else if (cloudResult.reason === "not_found") {
+          feesInfoEl.textContent = `No cloud fees found for "${className}" – ${period}. Trying local...`;
+        } else if (!cloudResult.ok) {
+          feesInfoEl.textContent = "Could not load fees from cloud (rules/connection). Using local copy if available.";
+        }
+      } else {
+        feesInfoEl.textContent = "Not signed in. Using only local fees on this device.";
       }
 
-      const payload = JSON.parse(saved);
-      const feesArr = payload.fees || [];
+      // 2) Fallback to local if needed
+      if (!feesArr) {
+        const key = storageKeyForFees(className, period);
+        const saved = localStorage.getItem(key);
+        if (!saved) {
+          alert("No fees data found for this class & period yet. Table will start empty.");
+          buildFeesTable(students);
+          feesInfoEl.textContent += ` No previous fees; starting fresh for "${className}" – ${period}.`;
+          return;
+        }
+        const payload = JSON.parse(saved);
+        feesArr = payload.fees || [];
+        feesInfoEl.textContent += ` Loaded fees from local storage for "${className}" – ${period}.`;
+      }
+
       const dataMap = {};
       feesArr.forEach((f) => {
         dataMap[f.name] = {
@@ -1891,7 +1989,6 @@
       });
 
       buildFeesTable(students, dataMap);
-      feesInfoEl.textContent = `Loaded fees for "${className}" – ${period}.`;
       updateFeesSummary();
     }
 
@@ -2044,7 +2141,7 @@
         return;
       }
 
-      const classLower = className.toLowerCase().trim();
+      const classLower = normalizeKey(className);
       parentInfoEl.textContent = `Summary for ${studentName} in "${className}".`;
 
       parentAttendanceListEl.innerHTML = "";
@@ -2307,9 +2404,9 @@
 
       // Fees
       feesLoadClassBtn.addEventListener("click", loadClassForFees);
-      feesLoadDataBtn.addEventListener("click", loadFeesData);
+      feesLoadDataBtn.addEventListener("click", () => { loadFeesData(); });
       feesClearAmountsBtn.addEventListener("click", clearFeesAmounts);
-      feesSaveBtn.addEventListener("click", saveFees);
+      feesSaveBtn.addEventListener("click", () => { saveFees(); });
       feesExportBtn.addEventListener("click", exportFeesCSV);
       feesTableBody.addEventListener("input", (e) => {
         if (e.target.classList.contains("fee-input")) {
