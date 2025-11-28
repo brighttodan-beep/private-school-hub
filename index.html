@@ -50,6 +50,26 @@
       border: 1px solid rgba(37,99,235,0.2);
     }
 
+    /* ---------- AUTH BAR ---------- */
+    .auth-bar {
+      margin-top: 10px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 0.8rem;
+      color: #1e40af;
+    }
+
+    .auth-status {
+      flex: 1;
+      min-width: 150px;
+    }
+
     .nav {
       display: flex;
       flex-wrap: wrap;
@@ -234,6 +254,30 @@
       padding-bottom: 8px;
     }
 
+    /* ---------- AUTH FORM CARD ---------- */
+    .auth-card {
+      margin-top: 10px;
+    }
+
+    .auth-card small {
+      font-size: 0.75rem;
+      color: #6b7280;
+    }
+
+    .auth-message {
+      font-size: 0.8rem;
+      margin-top: 6px;
+      min-height: 1.1em;
+    }
+
+    .auth-message.error {
+      color: #b91c1c;
+    }
+
+    .auth-message.success {
+      color: #15803d;
+    }
+
     /* ---------- LOCK SCREEN (PIN) ---------- */
     .lock-screen {
       position: fixed;
@@ -329,9 +373,40 @@
     <header>
       <div class="app-title">Private School Hub</div>
       <div class="app-sub">
-        All-in-one school app – Attendance • Grades • Fees • Parent Portal (v1)
+        All-in-one school app – Attendance • Grades • Fees • Parent Portal (v1 – Local + Auth)
       </div>
       <div class="badge">Developed by Bright TODAN</div>
+
+      <!-- AUTH BAR -->
+      <div id="authBar" class="auth-bar">
+        <div id="authStatus" class="auth-status">Not signed in</div>
+        <button id="showAuthFormBtn" class="secondary small">Sign in / Sign up</button>
+        <button id="logoutBtn" class="secondary small" style="display:none;">Log out</button>
+      </div>
+
+      <!-- AUTH FORM (TOGGLE) -->
+      <div id="authForm" class="card auth-card" style="display:none;">
+        <div class="card-title">User login / registration</div>
+        <div class="row">
+          <div class="col">
+            <label for="authEmail">Email</label>
+            <input id="authEmail" type="email" placeholder="example@school.com" />
+          </div>
+          <div class="col">
+            <label for="authPassword">Password</label>
+            <input id="authPassword" type="password" placeholder="At least 6 characters" />
+          </div>
+        </div>
+        <div class="btn-row">
+          <button id="authSignInBtn" class="primary small">Sign in</button>
+          <button id="authSignUpBtn" class="secondary small">Sign up (create account)</button>
+        </div>
+        <div id="authMessage" class="auth-message"></div>
+        <small>
+          This login is powered by Firebase Authentication. For now, it does not block the app.
+          Later, we will connect roles (Headmaster, Teacher, Finance) and cloud sync.
+        </small>
+      </div>
 
       <div class="nav">
         <button id="navAttendance" class="active">Attendance</button>
@@ -675,9 +750,9 @@
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
 
-    // Firebase services (we'll use them later)
+    // Firebase services
     const auth = firebase.auth();
-    const db = firebase.firestore();
+    const db = firebase.firestore(); // not yet used, rules locked
 
     /* -----------------------------------------------
        APP LOGIC (still using localStorage for now)
@@ -752,6 +827,18 @@
     const parentGradesListEl = document.getElementById("parentGradesList");
     const parentFeesListEl = document.getElementById("parentFeesList");
 
+    // Auth UI elements
+    const authBarEl = document.getElementById("authBar");
+    const authStatusEl = document.getElementById("authStatus");
+    const showAuthFormBtn = document.getElementById("showAuthFormBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const authFormEl = document.getElementById("authForm");
+    const authEmailEl = document.getElementById("authEmail");
+    const authPasswordEl = document.getElementById("authPassword");
+    const authSignInBtn = document.getElementById("authSignInBtn");
+    const authSignUpBtn = document.getElementById("authSignUpBtn");
+    const authMessageEl = document.getElementById("authMessage");
+
     // Lock elements
     const lockScreenEl = document.getElementById("lockScreen");
     const lockTitleEl = document.getElementById("lockTitle");
@@ -820,6 +907,97 @@
         students.push(name);
       }
       return students;
+    }
+
+    // ---------------- AUTH (LOGIN / SIGNUP) ----------------
+    function toggleAuthForm() {
+      if (authFormEl.style.display === "none" || authFormEl.style.display === "") {
+        authFormEl.style.display = "block";
+      } else {
+        authFormEl.style.display = "none";
+      }
+      authMessageEl.textContent = "";
+      authMessageEl.className = "auth-message";
+    }
+
+    function updateAuthUI(user) {
+      if (user) {
+        authStatusEl.textContent = `Signed in as ${user.email}`;
+        logoutBtn.style.display = "inline-block";
+        showAuthFormBtn.textContent = "Change account";
+        authFormEl.style.display = "none";
+        authMessageEl.textContent = "";
+        authMessageEl.className = "auth-message";
+      } else {
+        authStatusEl.textContent = "Not signed in";
+        logoutBtn.style.display = "none";
+        showAuthFormBtn.textContent = "Sign in / Sign up";
+        // do not force-open form
+      }
+    }
+
+    function handleSignIn() {
+      const email = authEmailEl.value.trim();
+      const password = authPasswordEl.value.trim();
+      authMessageEl.textContent = "";
+      authMessageEl.className = "auth-message";
+
+      if (!email || !password) {
+        authMessageEl.textContent = "Please enter both email and password.";
+        authMessageEl.classList.add("error");
+        return;
+      }
+
+      auth.signInWithEmailAndPassword(email, password)
+        .then(() => {
+          authMessageEl.textContent = "Signed in successfully.";
+          authMessageEl.classList.add("success");
+        })
+        .catch((error) => {
+          authMessageEl.textContent = error.message;
+          authMessageEl.classList.add("error");
+        });
+    }
+
+    function handleSignUp() {
+      const email = authEmailEl.value.trim();
+      const password = authPasswordEl.value.trim();
+      authMessageEl.textContent = "";
+      authMessageEl.className = "auth-message";
+
+      if (!email || !password) {
+        authMessageEl.textContent = "Please enter both email and password.";
+        authMessageEl.classList.add("error");
+        return;
+      }
+
+      if (password.length < 6) {
+        authMessageEl.textContent = "Password should be at least 6 characters.";
+        authMessageEl.classList.add("error");
+        return;
+      }
+
+      auth.createUserWithEmailAndPassword(email, password)
+        .then(() => {
+          authMessageEl.textContent = "Account created and signed in.";
+          authMessageEl.classList.add("success");
+        })
+        .catch((error) => {
+          authMessageEl.textContent = error.message;
+          authMessageEl.classList.add("error");
+        });
+    }
+
+    function handleLogout() {
+      auth.signOut()
+        .then(() => {
+          authMessageEl.textContent = "Signed out.";
+          authMessageEl.className = "auth-message success";
+        })
+        .catch((error) => {
+          authMessageEl.textContent = error.message;
+          authMessageEl.className = "auth-message error";
+        });
     }
 
     // ---------------- ATTENDANCE LOGIC ----------------
@@ -1965,6 +2143,17 @@
       navGradesBtn.addEventListener("click", switchToGrades);
       navFeesBtn.addEventListener("click", switchToFees);
       navParentBtn.addEventListener("click", switchToParent);
+
+      // Auth UI events
+      showAuthFormBtn.addEventListener("click", toggleAuthForm);
+      authSignInBtn.addEventListener("click", handleSignIn);
+      authSignUpBtn.addEventListener("click", handleSignUp);
+      logoutBtn.addEventListener("click", handleLogout);
+
+      // Listen to auth state changes
+      auth.onAuthStateChanged((user) => {
+        updateAuthUI(user);
+      });
     }
 
     function bootApp() {
