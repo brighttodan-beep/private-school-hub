@@ -1847,6 +1847,113 @@
       feesSection.style.display = "none";
       parentSection.style.display = "block";
     }
+    function switchToDashboard() {
+      navDashboardBtn.classList.add("active");
+      navAttendanceBtn.classList.remove("active");
+      navGradesBtn.classList.remove("active");
+      navFeesBtn.classList.remove("active");
+      navParentBtn.classList.remove("active");
+
+      attendanceSection.style.display = "none";
+      gradesSection.style.display = "none";
+      feesSection.style.display = "none";
+      parentSection.style.display = "none";
+      dashboardSection.style.display = "block";
+
+      buildDashboard();
+    }
+
+    function buildDashboard() {
+      let totalClasses = 0;
+      let totalStudents = 0;
+      let classLines = [];
+
+      let totalAttendanceRecords = 0;
+      let totalFeesSet = 0;
+      let totalFeesPaid = 0;
+
+      // Scan localStorage for all PSH keys
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (!key) continue;
+
+        // Class lists
+        if (key.startsWith(CLASS_KEY_PREFIX)) {
+          try {
+            const classPart = key.substring(CLASS_KEY_PREFIX.length);
+            const classNamePretty = prettyFromKeyPart(classPart);
+            const students = JSON.parse(localStorage.getItem(key)) || [];
+            const count = Array.isArray(students) ? students.length : 0;
+            totalClasses++;
+            totalStudents += count;
+            classLines.push(`• ${classNamePretty}: ${count} students`);
+          } catch (e) {
+            console.warn("Error reading class key", key, e);
+          }
+        }
+
+        // Attendance records
+        if (key.startsWith(ATT_KEY_PREFIX)) {
+          totalAttendanceRecords++;
+        }
+
+        // Fees data
+        if (key.startsWith(FEES_KEY_PREFIX)) {
+          try {
+            const payload = JSON.parse(localStorage.getItem(key));
+            const arr = (payload && payload.fees) || [];
+            arr.forEach(f => {
+              const total = typeof f.total === "number" ? f.total : 0;
+              const paid = typeof f.paid === "number" ? f.paid : 0;
+              totalFeesSet += total;
+              totalFeesPaid += paid;
+            });
+          } catch (e) {
+            console.warn("Error reading fees key", key, e);
+          }
+        }
+      }
+
+      const totalFeesRemaining = totalFeesSet - totalFeesPaid;
+
+      // Build HTML
+      let html = "";
+
+      html += `<p><strong>Overview on this device</strong></p>`;
+      html += `<ul style="padding-left:18px;">`;
+      html += `<li>Classes with lists: <strong>${totalClasses}</strong></li>`;
+      html += `<li>Total students (all classes): <strong>${totalStudents}</strong></li>`;
+      html += `<li>Saved attendance records (dates × classes): <strong>${totalAttendanceRecords}</strong></li>`;
+      html += `</ul>`;
+
+      if (classLines.length > 0) {
+        html += `<p style="margin-top:6px;"><strong>Classes</strong></p>`;
+        html += `<ul style="padding-left:18px;">`;
+        classLines.sort().forEach(line => {
+          html += `<li>${line}</li>`;
+        });
+        html += `</ul>`;
+      } else {
+        html += `<p>No class lists saved yet in this browser.</p>`;
+      }
+
+      html += `<p style="margin-top:10px;"><strong>Fees summary (all classes & periods)</strong></p>`;
+      if (totalFeesSet === 0 && totalFeesPaid === 0) {
+        html += `<p>No fees amounts saved yet. Use the School Fees tab to start recording.</p>`;
+      } else {
+        html += `<ul style="padding-left:18px;">`;
+        html += `<li>Total fee set: <strong>${totalFeesSet.toFixed(2)}</strong></li>`;
+        html += `<li>Total paid: <strong>${totalFeesPaid.toFixed(2)}</strong></li>`;
+        html += `<li>Remaining (global): <strong>${totalFeesRemaining.toFixed(2)}</strong></li>`;
+        html += `</ul>`;
+      }
+
+      html += `<p style="margin-top:10px; color:#6b7280; font-size:0.75rem;">`;
+      html += `Tip: for a new computer, restore a JSON backup first, then open this dashboard again.`;
+      html += `</p>`;
+
+      dashboardContentEl.innerHTML = html;
+    }
 
     function createBackupJson() {
       const backup = {};
