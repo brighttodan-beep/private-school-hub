@@ -5,353 +5,302 @@
   <title>Private School Hub – Attendance, Grades, Fees & Parent Portal</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-  body {
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background: radial-gradient(circle at top, #0b1120 0, #020617 50%, #020617 100%);
-    color: #e5e7eb;
-    margin: 0;
-    padding: 0;
-  }
-
-  .page {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 16px;
-  }
-
-  header {
-    padding: 12px 0 4px;
-  }
-
-  .app-title {
-    font-size: 1.4rem;
-    font-weight: 700;
-  }
-
-  .app-sub {
-    font-size: 0.85rem;
-    color: #9ca3af;
-  }
-
-  .nav {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin: 12px 0 16px;
-  }
-
-  .nav button {
-    padding: 8px 18px;
-    border-radius: 999px;
-    border: 1px solid #1f2937;
-    background: #0f172a;
-    color: #e5e7eb;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: 0.15s;
-  }
-
-  .nav button:hover:not(.active):not(.disabled) {
-    background: #1e293b;
-  }
-
-  .nav button.active {
-    background: #22c55e;
-    color: #020617;
-    border-color: #22c55e;
-    font-weight: 600;
-  }
-
-  .nav button.disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  .card {
-    background: #0f172a;
-    border-radius: 14px;
-    padding: 16px;
-    margin-bottom: 14px;
-    border: 1px solid #1e293b;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-  }
-
-  .card-title {
-    font-size: 1rem;
-    font-weight: 600;
-    margin-bottom: 10px;
-  }
-
-  label {
-    display: block;
-    font-size: 0.8rem;
-    color: #9ca3af;
-    margin-bottom: 6px;
-  }
-
-  input, textarea, select {
-    width: 100%;
-    padding: 10px;
-    border-radius: 10px;
-    border: 1px solid #1f2937;
-    background: #0b1120;
-    color: #e5e7eb;
-    font-size: 0.9rem;
-    transition: 0.15s;
-  }
-
-  input:focus, textarea:focus, select:focus {
-    outline: none;
-    border-color: #22c55e;
-    background: #111827;
-  }
-
-  textarea {
-    min-height: 80px;
-    resize: vertical;
-  }
-
-  .row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-
-  .col {
-    flex: 1;
-    min-width: 220px;
-  }
-
-  .btn-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 12px;
-  }
-
-  button {
-    border: none;
-    border-radius: 999px;
-    padding: 10px 16px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: 0.15s;
-  }
-
-  button.primary {
-    background: #22c55e;
-    color: #020617;
-  }
-
-  button.primary:hover {
-    background: #16a34a;
-  }
-
-  button.secondary {
-    background: #1e293b;
-    color: #e5e7eb;
-    border: 1px solid #334155;
-  }
-
-  button.secondary:hover {
-    background: #334155;
-  }
-
-  button.danger {
-    background: #ef4444;
-    color: #f9fafb;
-  }
-
-  button.danger:hover {
-    background: #dc2626;
-  }
-
-  button.small {
-    font-size: 0.75rem;
-    padding: 6px 10px;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.85rem;
-  }
-
-  th, td {
-    padding: 8px;
-    border-bottom: 1px solid #1e293b;
-  }
-
-  th {
-    color: #9ca3af;
-    font-weight: 500;
-  }
-
-  .status-select {
-    width: auto;
-    padding: 6px 10px;
-    border-radius: 8px;
-  }
-
-  .grade-input {
-    width: 90px;
-    padding: 6px;
-  }
-
-  .summary {
-    font-size: 0.8rem;
-    color: #9ca3af;
-    margin-top: 8px;
-  }
-
-  .footer {
-    text-align: center;
-    font-size: 0.75rem;
-    color: #6b7280;
-    margin-top: 20px;
-  }
-
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 14px;
-    border-radius: 999px;
-    font-size: 0.75rem;
-    background: rgba(34,197,94,0.1);
-    color: #4ade80;
-    margin-top: 6px;
-  }
-
-  /* LOCK SCREEN */
-  .lock-screen {
-    position: fixed;
-    inset: 0;
-    background: rgba(15,23,42,0.96);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 50;
-  }
-
-  .lock-card {
-    background: #020617;
-    border-radius: 16px;
-    padding: 20px 16px;
-    border: 1px solid #1f2937;
-    box-shadow: 0 12px 30px rgba(0,0,0,0.8);
-    max-width: 320px;
-    width: 100%;
-    text-align: center;
-  }
-
-  .lock-card h2 {
-    margin: 0 0 8px;
-    font-size: 1.2rem;
-  }
-
-  .lock-card p {
-    margin: 6px 0 12px;
-    font-size: 0.85rem;
-    color: #9ca3af;
-  }
-
-  .lock-card input {
-    width: 100%;
-    text-align: center;
-    letter-spacing: 0.3em;
-    font-size: 1.2rem;
-    padding: 10px;
-    border-radius: 999px;
-    border: 1px solid #1f2937;
-    background: #0b1120;
-    color: #e5e7eb;
-    margin-bottom: 12px;
-  }
-
-  .lock-card input:focus {
-    outline: none;
-    border-color: #22c55e;
-  }
-
-  .lock-buttons {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    margin-bottom: 6px;
-    flex-wrap: wrap;
-  }
-
-  .lock-message {
-    font-size: 0.85rem;
-    color: #f97316;
-    min-height: 1.1em;
-  }
-
-  @media (max-width: 600px) {
-    .page {
-      padding: 12px;
+    /* ---------- GLOBAL LIGHT THEME ---------- */
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #e5efff;
+      background: radial-gradient(circle at top, #e0edff 0, #f3f4ff 45%, #f9fafb 100%);
+      color: #0f172a;
+      margin: 0;
+      padding: 0;
     }
-  }
-</style>
 
-    /* LOCK SCREEN */
+    .page {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    header {
+      padding: 8px 0 4px;
+    }
+
+    .app-title {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #1d4ed8;
+    }
+
+    .app-sub {
+      font-size: 0.9rem;
+      color: #4b5563;
+      margin-top: 2px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      background: rgba(37,99,235,0.08);
+      color: #1d4ed8;
+      margin-top: 6px;
+      border: 1px solid rgba(37,99,235,0.2);
+    }
+
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 14px 0 16px;
+    }
+
+    .nav button {
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: 1px solid #cbd5f5;
+      background: #fff;
+      color: #1f2937;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+
+    .nav button:hover:not(.active):not(.disabled) {
+      background: #ebf2ff;
+    }
+
+    .nav button.active {
+      background: #2563eb;
+      color: #fff;
+      border-color: #2563eb;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(37,99,235,0.35);
+    }
+
+    .nav button.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 14px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 6px 20px rgba(15,23,42,0.08);
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #111827;
+    }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      color: #4b5563;
+      margin-bottom: 6px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 9px 10px;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      background: #ffffff;
+      color: #111827;
+      font-size: 0.9rem;
+      transition: 0.15s;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 1px rgba(37,99,235,0.25);
+      background: #f9fafb;
+    }
+
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .col {
+      flex: 1;
+      min-width: 220px;
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 9px 16px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+
+    button.primary {
+      background: #2563eb;
+      color: #ffffff;
+    }
+
+    button.primary:hover {
+      background: #1d4ed8;
+    }
+
+    button.secondary {
+      background: #eff6ff;
+      color: #1f2937;
+      border: 1px solid #cbd5f5;
+    }
+
+    button.secondary:hover {
+      background: #e0edff;
+    }
+
+    button.danger {
+      background: #ef4444;
+      color: #ffffff;
+    }
+
+    button.danger:hover {
+      background: #dc2626;
+    }
+
+    button.small {
+      font-size: 0.75rem;
+      padding: 6px 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+
+    th, td {
+      padding: 8px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    th {
+      color: #6b7280;
+      font-weight: 500;
+      background: #f9fafb;
+    }
+
+    .status-select {
+      width: auto;
+      padding: 6px 10px;
+      border-radius: 8px;
+    }
+
+    .grade-input, .fee-input {
+      width: 90px;
+      padding: 6px;
+    }
+
+    .summary {
+      font-size: 0.8rem;
+      color: #6b7280;
+      margin-top: 8px;
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 0.75rem;
+      color: #6b7280;
+      margin-top: 20px;
+      padding-bottom: 8px;
+    }
+
+    /* ---------- LOCK SCREEN (PIN) ---------- */
     .lock-screen {
       position: fixed;
       inset: 0;
-      background: rgba(15,23,42,0.96);
+      background: rgba(15,23,42,0.2);
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 50;
+      backdrop-filter: blur(4px);
     }
+
     .lock-card {
-      background: #020617;
+      background: #ffffff;
       border-radius: 16px;
       padding: 20px 16px;
-      border: 1px solid #1f2937;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.8);
+      border: 1px solid #d1d5db;
+      box-shadow: 0 16px 40px rgba(15,23,42,0.2);
       max-width: 320px;
       width: 100%;
       text-align: center;
     }
+
     .lock-card h2 {
       margin: 0 0 8px;
-      font-size: 1.1rem;
+      font-size: 1.2rem;
+      color: #111827;
     }
+
     .lock-card p {
-      margin: 4px 0 10px;
+      margin: 6px 0 12px;
       font-size: 0.85rem;
-      color: #9ca3af;
+      color: #4b5563;
     }
+
     .lock-card input {
       width: 100%;
       text-align: center;
       letter-spacing: 0.3em;
-      font-size: 1.1rem;
-      padding: 8px;
+      font-size: 1.2rem;
+      padding: 10px;
       border-radius: 999px;
-      border: 1px solid #1f2937;
-      background: #020617;
-      color: #e5e7eb;
-      margin-bottom: 10px;
+      border: 1px solid #d1d5db;
+      background: #f9fafb;
+      color: #111827;
+      margin-bottom: 12px;
     }
+
     .lock-card input:focus {
       outline: none;
-      border-color: #22c55e;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 1px rgba(37,99,235,0.25);
+      background: #ffffff;
     }
+
     .lock-buttons {
       display: flex;
-      gap: 8px;
+      gap: 10px;
       justify-content: center;
       margin-bottom: 6px;
       flex-wrap: wrap;
     }
+
     .lock-message {
-      font-size: 0.8rem;
-      color: #f97316;
-      min-height: 1em;
+      font-size: 0.85rem;
+      color: #b45309;
+      min-height: 1.1em;
     }
 
     @media (max-width: 600px) {
@@ -365,8 +314,8 @@
   <!-- PIN LOCK OVERLAY -->
   <div id="lockScreen" class="lock-screen">
     <div class="lock-card">
-      <h2 id="lockTitle">Private School Hub – Lock</h2>
-      <p id="lockSubtitle">Set a 4-digit PIN to protect data on this device.</p>
+      <h2 id="lockTitle">Private School Hub – PIN</h2>
+      <p id="lockSubtitle">Set a 4-digit PIN to protect school data on this device.</p>
       <input id="lockPinInput" type="password" maxlength="4" inputmode="numeric" />
       <div class="lock-buttons">
         <button id="lockPrimaryBtn" class="primary">Save PIN</button>
@@ -380,7 +329,7 @@
     <header>
       <div class="app-title">Private School Hub</div>
       <div class="app-sub">
-        All-in-one school tool – Attendance • Grades • Fees • Parent Portal (v1)
+        All-in-one school app – Attendance • Grades • Fees • Parent Portal (v1)
       </div>
       <div class="badge">Developed by Bright TODAN</div>
 
@@ -394,34 +343,32 @@
 
     <!-- ATTENDANCE MODULE -->
     <section id="attendance">
-      <!-- Class & Date -->
       <div class="card">
         <div class="card-title">Class & Date</div>
         <div class="row">
           <div class="col">
             <label for="className">Class</label>
-<select id="className">
-  <option value="">-- Select class --</option>
-  <optgroup label="Primary">
-    <option value="Primary 1">Primary 1</option>
-    <option value="Primary 2">Primary 2</option>
-    <option value="Primary 3">Primary 3</option>
-    <option value="Primary 4">Primary 4</option>
-    <option value="Primary 5">Primary 5</option>
-    <option value="Primary 6">Primary 6</option>
-  </optgroup>
-  <optgroup label="JHS">
-    <option value="JHS 1">JHS 1</option>
-    <option value="JHS 2">JHS 2</option>
-    <option value="JHS 3">JHS 3</option>
-  </optgroup>
-  <optgroup label="SHS">
-    <option value="SHS 1">SHS 1</option>
-    <option value="SHS 2">SHS 2</option>
-    <option value="SHS 3">SHS 3</option>
-  </optgroup>
-</select>
-
+            <select id="className">
+              <option value="">-- Select class --</option>
+              <optgroup label="Primary">
+                <option value="Primary 1">Primary 1</option>
+                <option value="Primary 2">Primary 2</option>
+                <option value="Primary 3">Primary 3</option>
+                <option value="Primary 4">Primary 4</option>
+                <option value="Primary 5">Primary 5</option>
+                <option value="Primary 6">Primary 6</option>
+              </optgroup>
+              <optgroup label="JHS">
+                <option value="JHS 1">JHS 1</option>
+                <option value="JHS 2">JHS 2</option>
+                <option value="JHS 3">JHS 3</option>
+              </optgroup>
+              <optgroup label="SHS">
+                <option value="SHS 1">SHS 1</option>
+                <option value="SHS 2">SHS 2</option>
+                <option value="SHS 3">SHS 3</option>
+              </optgroup>
+            </select>
           </div>
           <div class="col">
             <label for="attDate">Date</label>
@@ -435,10 +382,9 @@
         <div class="summary" id="classInfo"></div>
       </div>
 
-      <!-- Student list setup -->
       <div class="card">
         <div class="card-title">Student list for this class</div>
-        <p style="font-size:0.8rem; color:#9ca3af; margin-top:0;">
+        <p style="font-size:0.8rem; color:#4b5563; margin-top:0;">
           Type or paste student names, one per line. Example:<br/>
           <em>1. Kossi Mawuli<br/>2. Ama Akosua<br/>3. John Mensah</em><br/>
           Numbers are optional, they will be cleaned automatically.
@@ -450,10 +396,9 @@
         <div class="summary" id="studentsCountInfo"></div>
       </div>
 
-      <!-- Attendance table -->
       <div class="card">
         <div class="card-title">Today’s attendance</div>
-        <p style="font-size:0.8rem; color:#9ca3af; margin-top:0;">
+        <p style="font-size:0.8rem; color:#4b5563; margin-top:0;">
           After saving the class list, you will see all students below with a status:
           <strong>Present</strong>, <strong>Absent</strong>, or <strong>Late</strong>.
         </p>
@@ -482,34 +427,32 @@
 
     <!-- GRADES MODULE -->
     <section id="grades" style="display:none;">
-      <!-- Class, subject, assessment -->
       <div class="card">
         <div class="card-title">Class, Subject & Assessment</div>
         <div class="row">
           <div class="col">
             <label for="gradesClassName">Class</label>
-<select id="gradesClassName">
-  <option value="">-- Select class --</option>
-  <optgroup label="Primary">
-    <option value="Primary 1">Primary 1</option>
-    <option value="Primary 2">Primary 2</option>
-    <option value="Primary 3">Primary 3</option>
-    <option value="Primary 4">Primary 4</option>
-    <option value="Primary 5">Primary 5</option>
-    <option value="Primary 6">Primary 6</option>
-  </optgroup>
-  <optgroup label="JHS">
-    <option value="JHS 1">JHS 1</option>
-    <option value="JHS 2">JHS 2</option>
-    <option value="JHS 3">JHS 3</option>
-  </optgroup>
-  <optgroup label="SHS">
-    <option value="SHS 1">SHS 1</option>
-    <option value="SHS 2">SHS 2</option>
-    <option value="SHS 3">SHS 3</option>
-  </optgroup>
-</select>
-
+            <select id="gradesClassName">
+              <option value="">-- Select class --</option>
+              <optgroup label="Primary">
+                <option value="Primary 1">Primary 1</option>
+                <option value="Primary 2">Primary 2</option>
+                <option value="Primary 3">Primary 3</option>
+                <option value="Primary 4">Primary 4</option>
+                <option value="Primary 5">Primary 5</option>
+                <option value="Primary 6">Primary 6</option>
+              </optgroup>
+              <optgroup label="JHS">
+                <option value="JHS 1">JHS 1</option>
+                <option value="JHS 2">JHS 2</option>
+                <option value="JHS 3">JHS 3</option>
+              </optgroup>
+              <optgroup label="SHS">
+                <option value="SHS 1">SHS 1</option>
+                <option value="SHS 2">SHS 2</option>
+                <option value="SHS 3">SHS 3</option>
+              </optgroup>
+            </select>
           </div>
           <div class="col">
             <label for="subjectName">Subject</label>
@@ -534,10 +477,9 @@
         <div class="summary" id="gradesInfo"></div>
       </div>
 
-      <!-- Grades table -->
       <div class="card">
         <div class="card-title">Scores table</div>
-        <p style="font-size:0.8rem; color:#9ca3af; margin-top:0;">
+        <p style="font-size:0.8rem; color:#4b5563; margin-top:0;">
           After loading the class list, you will see all students with an empty score field.
           Enter scores and save them for this subject & assessment.
         </p>
@@ -565,34 +507,32 @@
 
     <!-- FEES MODULE -->
     <section id="fees" style="display:none;">
-      <!-- Class & period -->
       <div class="card">
         <div class="card-title">Class & Fee Period</div>
         <div class="row">
           <div class="col">
             <label for="feesClassName">Class</label>
-<select id="feesClassName">
-  <option value="">-- Select class --</option>
-  <optgroup label="Primary">
-    <option value="Primary 1">Primary 1</option>
-    <option value="Primary 2">Primary 2</option>
-    <option value="Primary 3">Primary 3</option>
-    <option value="Primary 4">Primary 4</option>
-    <option value="Primary 5">Primary 5</option>
-    <option value="Primary 6">Primary 6</option>
-  </optgroup>
-  <optgroup label="JHS">
-    <option value="JHS 1">JHS 1</option>
-    <option value="JHS 2">JHS 2</option>
-    <option value="JHS 3">JHS 3</option>
-  </optgroup>
-  <optgroup label="SHS">
-    <option value="SHS 1">SHS 1</option>
-    <option value="SHS 2">SHS 2</option>
-    <option value="SHS 3">SHS 3</option>
-  </optgroup>
-</select>
-
+            <select id="feesClassName">
+              <option value="">-- Select class --</option>
+              <optgroup label="Primary">
+                <option value="Primary 1">Primary 1</option>
+                <option value="Primary 2">Primary 2</option>
+                <option value="Primary 3">Primary 3</option>
+                <option value="Primary 4">Primary 4</option>
+                <option value="Primary 5">Primary 5</option>
+                <option value="Primary 6">Primary 6</option>
+              </optgroup>
+              <optgroup label="JHS">
+                <option value="JHS 1">JHS 1</option>
+                <option value="JHS 2">JHS 2</option>
+                <option value="JHS 3">JHS 3</option>
+              </optgroup>
+              <optgroup label="SHS">
+                <option value="SHS 1">SHS 1</option>
+                <option value="SHS 2">SHS 2</option>
+                <option value="SHS 3">SHS 3</option>
+              </optgroup>
+            </select>
           </div>
           <div class="col">
             <label for="feePeriod">Fee period / term</label>
@@ -607,10 +547,9 @@
         <div class="summary" id="feesInfo"></div>
       </div>
 
-      <!-- Fees table -->
       <div class="card">
         <div class="card-title">School fees table</div>
-        <p style="font-size:0.8rem; color:#9ca3af; margin-top:0;">
+        <p style="font-size:0.8rem; color:#4b5563; margin-top:0;">
           After loading the class list, set the total school fees and amount paid for each student.
           Remaining balance is calculated automatically.
         </p>
@@ -642,35 +581,34 @@
     <section id="parent" style="display:none;">
       <div class="card">
         <div class="card-title">Parent Portal – Select student</div>
-        <p style="font-size:0.8rem; color:#9ca3af; margin-top:0;">
+        <p style="font-size:0.8rem; color:#4b5563; margin-top:0;">
           This view is read-only. It summarizes attendance, grades and fees for one student,
           based on data already saved on this device.
         </p>
         <div class="row">
           <div class="col">
             <label for="parentClassName">Class</label>
-<select id="parentClassName">
-  <option value="">-- Select class --</option>
-  <optgroup label="Primary">
-    <option value="Primary 1">Primary 1</option>
-    <option value="Primary 2">Primary 2</option>
-    <option value="Primary 3">Primary 3</option>
-    <option value="Primary 4">Primary 4</option>
-    <option value="Primary 5">Primary 5</option>
-    <option value="Primary 6">Primary 6</option>
-  </optgroup>
-  <optgroup label="JHS">
-    <option value="JHS 1">JHS 1</option>
-    <option value="JHS 2">JHS 2</option>
-    <option value="JHS 3">JHS 3</option>
-  </optgroup>
-  <optgroup label="SHS">
-    <option value="SHS 1">SHS 1</option>
-    <option value="SHS 2">SHS 2</option>
-    <option value="SHS 3">SHS 3</option>
-  </optgroup>
-</select>
-
+            <select id="parentClassName">
+              <option value="">-- Select class --</option>
+              <optgroup label="Primary">
+                <option value="Primary 1">Primary 1</option>
+                <option value="Primary 2">Primary 2</option>
+                <option value="Primary 3">Primary 3</option>
+                <option value="Primary 4">Primary 4</option>
+                <option value="Primary 5">Primary 5</option>
+                <option value="Primary 6">Primary 6</option>
+              </optgroup>
+              <optgroup label="JHS">
+                <option value="JHS 1">JHS 1</option>
+                <option value="JHS 2">JHS 2</option>
+                <option value="JHS 3">JHS 3</option>
+              </optgroup>
+              <optgroup label="SHS">
+                <option value="SHS 1">SHS 1</option>
+                <option value="SHS 2">SHS 2</option>
+                <option value="SHS 3">SHS 3</option>
+              </optgroup>
+            </select>
           </div>
           <div class="col">
             <label for="parentStudentSelect">Student</label>
@@ -688,19 +626,19 @@
 
       <div class="card">
         <div class="card-title">Student summary (read-only)</div>
-        <p style="font-size:0.8rem; color:#9ca3af; margin-top:0;">
+        <p style="font-size:0.8rem; color:#4b5563; margin-top:0;">
           Use this section when meeting a parent. It shows only what has already been recorded
           in Attendance, Grades and Fees modules on this device.
         </p>
 
         <h4 style="font-size:0.9rem; margin-top:4px;">Attendance history</h4>
-        <div id="parentAttendanceList" style="font-size:0.8rem; color:#e5e7eb;"></div>
+        <div id="parentAttendanceList" style="font-size:0.8rem;"></div>
 
         <h4 style="font-size:0.9rem; margin-top:10px;">Grades</h4>
-        <div id="parentGradesList" style="font-size:0.8rem; color:#e5e7eb;"></div>
+        <div id="parentGradesList" style="font-size:0.8rem;"></div>
 
         <h4 style="font-size:0.9rem; margin-top:10px;">School fees</h4>
-        <div id="parentFeesList" style="font-size:0.8rem; color:#e5e7eb;"></div>
+        <div id="parentFeesList" style="font-size:0.8rem;"></div>
       </div>
 
       <div class="summary">
@@ -710,8 +648,8 @@
     </section>
 
     <div class="footer">
-      Data is stored in your browser (local only) on each device.<br/>
-      Private School Hub – Attendance, Grades, Fees & Parent Portal v1 – by Bright TODAN.
+      Data is stored locally in this browser on each device.<br/>
+      Private School Hub – by Bright TODAN.
     </div>
   </div>
 
@@ -859,7 +797,7 @@
     function loadClassList() {
       const className = classNameEl.value.trim();
       if (!className) {
-        alert("Please enter the class name first.");
+        alert("Please select the class.");
         return;
       }
       const key = storageKeyForClass(className);
@@ -881,7 +819,7 @@
     function saveClassList() {
       const className = classNameEl.value.trim();
       if (!className) {
-        alert("Please enter the class name.");
+        alert("Please select the class.");
         return;
       }
       const students = parseStudents(studentsRawEl.value);
@@ -899,7 +837,7 @@
     function clearClassList() {
       const className = classNameEl.value.trim();
       if (!className) {
-        alert("Please enter the class name.");
+        alert("Please select the class.");
         return;
       }
       const key = storageKeyForClass(className);
@@ -977,7 +915,7 @@
       const className = classNameEl.value.trim();
       const dateVal = attDateEl.value;
       if (!className) {
-        alert("Please enter the class name.");
+        alert("Please select the class.");
         return;
       }
       if (!dateVal) {
@@ -1000,7 +938,7 @@
       const className = classNameEl.value.trim();
       const dateVal = attDateEl.value;
       if (!className) {
-        alert("Please enter the class name.");
+        alert("Please select the class.");
         return;
       }
       if (!dateVal) {
@@ -1053,7 +991,7 @@
       const className = classNameEl.value.trim();
       const dateVal = attDateEl.value;
       if (!className) {
-        alert("Please enter the class name.");
+        alert("Please select the class.");
         return;
       }
       if (!dateVal) {
@@ -1095,7 +1033,7 @@
     function loadClassForGrades() {
       const className = gradesClassNameEl.value.trim();
       if (!className) {
-        alert("Please enter the class name.");
+        alert("Please select the class.");
         return;
       }
       const key = storageKeyForClass(className);
@@ -1173,7 +1111,7 @@
       const subject = subjectNameEl.value.trim();
       const assessment = assessmentNameEl.value.trim();
       if (!className) {
-        alert("Please enter the class name.");
+        alert("Please select the class.");
         return;
       }
       if (!subject) {
@@ -1216,7 +1154,7 @@
       const subject = subjectNameEl.value.trim();
       const assessment = assessmentNameEl.value.trim();
       if (!className) {
-        alert("Please enter the class name.");
+        alert("Please select the class.");
         return;
       }
       if (!subject) {
@@ -1316,7 +1254,7 @@
       const subject = subjectNameEl.value.trim();
       const assessment = assessmentNameEl.value.trim();
       if (!className) {
-        alert("Please enter the class name.");
+        alert("Please select the class.");
         return;
       }
       if (!subject) {
@@ -1371,7 +1309,7 @@
     function loadClassForFees() {
       const className = feesClassNameEl.value.trim();
       if (!className) {
-        alert("Please enter the class name.");
+        alert("Please select the class.");
         return;
       }
       const key = storageKeyForClass(className);
@@ -1493,7 +1431,7 @@
       const className = feesClassNameEl.value.trim();
       const period = feePeriodEl.value.trim();
       if (!className) {
-        alert("Please enter the class name.");
+        alert("Please select the class.");
         return;
       }
       if (!period) {
@@ -1526,7 +1464,7 @@
       const className = feesClassNameEl.value.trim();
       const period = feePeriodEl.value.trim();
       if (!className) {
-        alert("Please enter the class name.");
+        alert("Please select the class.");
         return;
       }
       if (!period) {
@@ -1624,7 +1562,7 @@
       const className = feesClassNameEl.value.trim();
       const period = feePeriodEl.value.trim();
       if (!className) {
-        alert("Please enter the class name.");
+        alert("Please select the class.");
         return;
       }
       if (!period) {
@@ -1679,7 +1617,7 @@
     function loadClassForParent() {
       const className = parentClassNameEl.value.trim();
       if (!className) {
-        alert("Please enter the class name.");
+        alert("Please select the class.");
         return;
       }
       const key = storageKeyForClass(className);
@@ -1707,7 +1645,7 @@
       const className = parentClassNameEl.value.trim();
       const studentName = parentStudentSelectEl.value;
       if (!className) {
-        alert("Please enter the class name.");
+        alert("Please select the class.");
         return;
       }
       if (!studentName) {
