@@ -5,353 +5,121 @@
   <title>Private School Hub – Attendance, Grades, Fees & Parent Portal</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    /* ---------- GLOBAL LIGHT THEME ---------- */
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #e5efff;
       background: radial-gradient(circle at top, #e0edff 0, #f3f4ff 45%, #f9fafb 100%);
       color: #0f172a;
       margin: 0;
       padding: 0;
     }
-
-    .page {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 16px;
-    }
-
-    header {
-      padding: 8px 0 4px;
-    }
-
-    .app-title {
-      font-size: 1.6rem;
-      font-weight: 800;
-      color: #1d4ed8;
-    }
-
-    .app-sub {
-      font-size: 0.9rem;
-      color: #4b5563;
-      margin-top: 2px;
-    }
-
+    .page { max-width: 1000px; margin: 0 auto; padding: 16px; }
+    header { padding: 8px 0 4px; }
+    .app-title { font-size: 1.6rem; font-weight: 800; color: #1d4ed8; }
+    .app-sub { font-size: 0.9rem; color: #4b5563; margin-top: 2px; }
     .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      font-size: 0.75rem;
-      background: rgba(37,99,235,0.08);
-      color: #1d4ed8;
-      margin-top: 6px;
-      border: 1px solid rgba(37,99,235,0.2);
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 10px; border-radius: 999px; font-size: 0.75rem;
+      background: rgba(37,99,235,0.08); color: #1d4ed8;
+      margin-top: 6px; border: 1px solid rgba(37,99,235,0.2);
     }
-
-    /* ---------- AUTH BAR ---------- */
     .auth-bar {
-      margin-top: 10px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: #eff6ff;
-      border: 1px solid #bfdbfe;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-      font-size: 0.8rem;
-      color: #1e40af;
+      margin-top: 10px; padding: 8px 12px; border-radius: 999px;
+      background: #eff6ff; border: 1px solid #bfdbfe;
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      font-size: 0.8rem; color: #1e40af;
     }
-
-    .auth-status {
-      flex: 1;
-      min-width: 150px;
-    }
-
+    .auth-status { flex: 1; min-width: 150px; }
     .nav {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
+      display: flex; flex-wrap: wrap; gap: 8px;
       margin: 14px 0 16px;
     }
-
     .nav button {
-      padding: 8px 16px;
-      border-radius: 999px;
-      border: 1px solid #cbd5f5;
-      background: #fff;
-      color: #1f2937;
-      font-size: 0.9rem;
-      cursor: pointer;
+      padding: 8px 16px; border-radius: 999px;
+      border: 1px solid #cbd5f5; background: #fff;
+      color: #1f2937; font-size: 0.9rem; cursor: pointer;
       transition: 0.15s;
     }
-
-    .nav button:hover:not(.active):not(.disabled) {
-      background: #ebf2ff;
-    }
-
+    .nav button:hover:not(.active):not(.disabled) { background: #ebf2ff; }
     .nav button.active {
-      background: #2563eb;
-      color: #fff;
-      border-color: #2563eb;
-      font-weight: 600;
-      box-shadow: 0 4px 12px rgba(37,99,235,0.35);
+      background: #2563eb; color: #fff; border-color: #2563eb;
+      font-weight: 600; box-shadow: 0 4px 12px rgba(37,99,235,0.35);
     }
-
-    .nav button.disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
+    .nav button.disabled { opacity: 0.5; cursor: not-allowed; }
     .card {
-      background: #ffffff;
-      border-radius: 14px;
-      padding: 16px;
-      margin-bottom: 14px;
-      border: 1px solid #e5e7eb;
+      background: #ffffff; border-radius: 14px; padding: 16px;
+      margin-bottom: 14px; border: 1px solid #e5e7eb;
       box-shadow: 0 6px 20px rgba(15,23,42,0.08);
     }
-
-    .card-title {
-      font-size: 1rem;
-      font-weight: 600;
-      margin-bottom: 10px;
-      color: #111827;
-    }
-
+    .card-title { font-size: 1rem; font-weight: 600; margin-bottom: 10px; color: #111827; }
     label {
-      display: block;
-      font-size: 0.8rem;
-      color: #4b5563;
-      margin-bottom: 6px;
+      display: block; font-size: 0.8rem; color: #4b5563; margin-bottom: 6px;
     }
-
     input, textarea, select {
-      width: 100%;
-      padding: 9px 10px;
-      border-radius: 10px;
-      border: 1px solid #d1d5db;
-      background: #ffffff;
-      color: #111827;
-      font-size: 0.9rem;
-      transition: 0.15s;
+      width: 100%; padding: 9px 10px; border-radius: 10px;
+      border: 1px solid #d1d5db; background: #ffffff;
+      color: #111827; font-size: 0.9rem; transition: 0.15s;
     }
-
     input:focus, textarea:focus, select:focus {
-      outline: none;
-      border-color: #2563eb;
-      box-shadow: 0 0 0 1px rgba(37,99,235,0.25);
-      background: #f9fafb;
+      outline: none; border-color: #2563eb;
+      box-shadow: 0 0 0 1px rgba(37,99,235,0.25); background: #f9fafb;
     }
-
-    textarea {
-      min-height: 80px;
-      resize: vertical;
-    }
-
-    .row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-
-    .col {
-      flex: 1;
-      min-width: 220px;
-    }
-
-    .btn-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 12px;
-    }
-
+    textarea { min-height: 80px; resize: vertical; }
+    .row { display: flex; flex-wrap: wrap; gap: 12px; }
+    .col { flex: 1; min-width: 220px; }
+    .btn-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
     button {
-      border: none;
-      border-radius: 999px;
-      padding: 9px 16px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: 0.15s;
+      border: none; border-radius: 999px; padding: 9px 16px;
+      font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: 0.15s;
     }
-
-    button.primary {
-      background: #2563eb;
-      color: #ffffff;
-    }
-
-    button.primary:hover {
-      background: #1d4ed8;
-    }
-
+    button.primary { background: #2563eb; color: #ffffff; }
+    button.primary:hover { background: #1d4ed8; }
     button.secondary {
-      background: #eff6ff;
-      color: #1f2937;
-      border: 1px solid #cbd5f5;
+      background: #eff6ff; color: #1f2937; border: 1px solid #cbd5f5;
     }
-
-    button.secondary:hover {
-      background: #e0edff;
-    }
-
-    button.danger {
-      background: #ef4444;
-      color: #ffffff;
-    }
-
-    button.danger:hover {
-      background: #dc2626;
-    }
-
-    button.small {
-      font-size: 0.75rem;
-      padding: 6px 10px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.85rem;
-    }
-
-    th, td {
-      padding: 8px;
-      border-bottom: 1px solid #e5e7eb;
-    }
-
-    th {
-      color: #6b7280;
-      font-weight: 500;
-      background: #f9fafb;
-    }
-
-    .status-select {
-      width: auto;
-      padding: 6px 10px;
-      border-radius: 8px;
-    }
-
-    .grade-input, .fee-input {
-      width: 90px;
-      padding: 6px;
-    }
-
-    .summary {
-      font-size: 0.8rem;
-      color: #6b7280;
-      margin-top: 8px;
-    }
-
+    button.secondary:hover { background: #e0edff; }
+    button.danger { background: #ef4444; color: #ffffff; }
+    button.danger:hover { background: #dc2626; }
+    button.small { font-size: 0.75rem; padding: 6px 10px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th, td { padding: 8px; border-bottom: 1px solid #e5e7eb; }
+    th { color: #6b7280; font-weight: 500; background: #f9fafb; }
+    .status-select { width: auto; padding: 6px 10px; border-radius: 8px; }
+    .grade-input, .fee-input { width: 90px; padding: 6px; }
+    .summary { font-size: 0.8rem; color: #6b7280; margin-top: 8px; }
     .footer {
-      text-align: center;
-      font-size: 0.75rem;
-      color: #6b7280;
-      margin-top: 20px;
-      padding-bottom: 8px;
+      text-align: center; font-size: 0.75rem;
+      color: #6b7280; margin-top: 20px; padding-bottom: 8px;
     }
-
-    /* ---------- AUTH FORM CARD ---------- */
-    .auth-card {
-      margin-top: 10px;
-    }
-
-    .auth-card small {
-      font-size: 0.75rem;
-      color: #6b7280;
-    }
-
-    .auth-message {
-      font-size: 0.8rem;
-      margin-top: 6px;
-      min-height: 1.1em;
-    }
-
-    .auth-message.error {
-      color: #b91c1c;
-    }
-
-    .auth-message.success {
-      color: #15803d;
-    }
-
-    /* ---------- LOCK SCREEN (PIN) ---------- */
+    .auth-card { margin-top: 10px; }
+    .auth-card small { font-size: 0.75rem; color: #6b7280; }
+    .auth-message { font-size: 0.8rem; margin-top: 6px; min-height: 1.1em; }
+    .auth-message.error { color: #b91c1c; }
+    .auth-message.success { color: #15803d; }
     .lock-screen {
-      position: fixed;
-      inset: 0;
-      background: rgba(15,23,42,0.2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 50;
-      backdrop-filter: blur(4px);
+      position: fixed; inset: 0; background: rgba(15,23,42,0.2);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 50; backdrop-filter: blur(4px);
     }
-
     .lock-card {
-      background: #ffffff;
-      border-radius: 16px;
-      padding: 20px 16px;
-      border: 1px solid #d1d5db;
-      box-shadow: 0 16px 40px rgba(15,23,42,0.2);
-      max-width: 320px;
-      width: 100%;
-      text-align: center;
+      background: #ffffff; border-radius: 16px; padding: 20px 16px;
+      border: 1px solid #d1d5db; box-shadow: 0 16px 40px rgba(15,23,42,0.2);
+      max-width: 320px; width: 100%; text-align: center;
     }
-
-    .lock-card h2 {
-      margin: 0 0 8px;
-      font-size: 1.2rem;
-      color: #111827;
-    }
-
-    .lock-card p {
-      margin: 6px 0 12px;
-      font-size: 0.85rem;
-      color: #4b5563;
-    }
-
+    .lock-card h2 { margin: 0 0 8px; font-size: 1.2rem; color: #111827; }
+    .lock-card p { margin: 6px 0 12px; font-size: 0.85rem; color: #4b5563; }
     .lock-card input {
-      width: 100%;
-      text-align: center;
-      letter-spacing: 0.3em;
-      font-size: 1.2rem;
-      padding: 10px;
-      border-radius: 999px;
-      border: 1px solid #d1d5db;
-      background: #f9fafb;
-      color: #111827;
+      width: 100%; text-align: center; letter-spacing: 0.3em;
+      font-size: 1.2rem; padding: 10px; border-radius: 999px;
+      border: 1px solid #d1d5db; background: #f9fafb; color: #111827;
       margin-bottom: 12px;
     }
-
     .lock-card input:focus {
-      outline: none;
-      border-color: #2563eb;
-      box-shadow: 0 0 0 1px rgba(37,99,235,0.25);
-      background: #ffffff;
+      outline: none; border-color: #2563eb;
+      box-shadow: 0 0 0 1px rgba(37,99,235,0.25); background: #ffffff;
     }
-
-    .lock-buttons {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      margin-bottom: 6px;
-      flex-wrap: wrap;
-    }
-
-    .lock-message {
-      font-size: 0.85rem;
-      color: #b45309;
-      min-height: 1.1em;
-    }
-
-    @media (max-width: 600px) {
-      .page {
-        padding: 12px;
-      }
-    }
+    .lock-buttons { display: flex; gap: 10px; justify-content: center; margin-bottom: 6px; flex-wrap: wrap; }
+    .lock-message { font-size: 0.85rem; color: #b45309; min-height: 1.1em; }
+    @media (max-width: 600px) { .page { padding: 12px; } }
   </style>
 </head>
 <body>
@@ -373,7 +141,7 @@
     <header>
       <div class="app-title">Private School Hub</div>
       <div class="app-sub">
-        All-in-one school app – Attendance • Grades • Fees • Parent Portal (v4 – Local + Auth + Cloud Class, Attendance & Fees)
+        All-in-one school app – Attendance • Grades • Fees • Parent Portal (v4 – Local + Auth + Cloud + Backup)
       </div>
       <div class="badge">Developed by Bright TODAN</div>
 
@@ -384,7 +152,7 @@
         <button id="logoutBtn" class="secondary small" style="display:none;">Log out</button>
       </div>
 
-      <!-- AUTH FORM (TOGGLE) -->
+      <!-- AUTH FORM -->
       <div id="authForm" class="card auth-card" style="display:none;">
         <div class="card-title">User login / registration</div>
         <div class="row">
@@ -487,9 +255,7 @@
                 <th>Status</th>
               </tr>
             </thead>
-            <tbody>
-              <!-- filled by JS -->
-            </tbody>
+            <tbody></tbody>
           </table>
         </div>
         <div class="btn-row">
@@ -568,9 +334,7 @@
                 <th>Score</th>
               </tr>
             </thead>
-            <tbody>
-              <!-- filled by JS -->
-            </tbody>
+            <tbody></tbody>
           </table>
         </div>
         <div class="btn-row">
@@ -641,9 +405,7 @@
                 <th>Remaining</th>
               </tr>
             </thead>
-            <tbody>
-              <!-- filled by JS -->
-            </tbody>
+            <tbody></tbody>
           </table>
         </div>
         <div class="btn-row">
@@ -724,21 +486,40 @@
       </div>
     </section>
 
+    <!-- BACKUP & RESTORE SECTION -->
+    <section id="backupSection">
+      <div class="card">
+        <div class="card-title">Backup & Restore (Device data)</div>
+        <p style="font-size:0.8rem; color:#4b5563; margin-top:0;">
+          This backup includes only Private School Hub data saved in this browser:
+          class lists, attendance, grades, fees and PIN.<br/>
+          Use it when changing computer or browser.
+        </p>
+        <div class="btn-row">
+          <button id="backupDownloadBtn" class="secondary small">
+            Download backup (.json)
+          </button>
+          <button id="backupRestoreBtn" class="primary small">
+            Restore from backup file
+          </button>
+          <input id="backupFileInput" type="file" accept=".json,application/json" style="display:none;" />
+        </div>
+        <div class="summary" id="backupInfo"></div>
+      </div>
+    </section>
+
     <div class="footer">
       Data is stored locally in this browser, and class lists, attendance and fees are backed up in the cloud when you are signed in.<br/>
       Private School Hub – by Bright TODAN.
     </div>
   </div>
 
-  <!-- Firebase CDN (compat version for simple HTML app) -->
+  <!-- Firebase CDN (compat) -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
   <script>
-    /* -----------------------------------------------
-       Firebase Initialization – Private School Hub
-    ------------------------------------------------ */
     const firebaseConfig = {
       apiKey: "AIzaSyBL6zBTICYR64TuNSAO19s1iI6POAm0ZQU",
       authDomain: "private-school-hub.firebaseapp.com",
@@ -748,51 +529,37 @@
       appId: "1:1042069826904:web:67d1612f78ff440fcb092d",
       measurementId: "G-5TMPV3Q8ZC"
     };
-
     firebase.initializeApp(firebaseConfig);
-
     const auth = firebase.auth();
-    const db = firebase.firestore(); // used for cloud class lists, attendance & fees
+    const db = firebase.firestore();
 
     const CLOUD_CLASSES_COLLECTION = "classLists";
     const CLOUD_ATTENDANCE_COLLECTION = "attendanceRecords";
     const CLOUD_FEES_COLLECTION = "feesRecords";
 
-    // Helpers for Firestore doc IDs
     function normalizeKey(str) {
       return str.toLowerCase().trim().replace(/\s+/g, "_");
     }
-
-    function getClassDocId(className) {
-      return normalizeKey(className);
-    }
-
+    function getClassDocId(className) { return normalizeKey(className); }
     function getAttendanceDocId(className, dateISO) {
       return normalizeKey(className) + "__" + dateISO;
     }
-
     function getFeesDocId(className, period) {
       return normalizeKey(className) + "__" + normalizeKey(period);
     }
 
-    // Cloud: class lists
     async function saveClassListToCloud(className, students) {
-      if (!auth.currentUser) {
-        return { ok: false, reason: "not_logged_in" };
-      }
+      if (!auth.currentUser) return { ok: false, reason: "not_logged_in" };
       const uid = auth.currentUser.uid;
       const email = auth.currentUser.email || "";
       const docId = getClassDocId(className);
-
       try {
         await db.collection(CLOUD_CLASSES_COLLECTION).doc(docId).set({
-          className: className,
-          students: students,
+          className, students,
           ownerUid: uid,
           updatedBy: email || uid,
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
-
         return { ok: true };
       } catch (error) {
         console.error("Cloud save class error:", error);
@@ -801,16 +568,11 @@
     }
 
     async function loadClassListFromCloud(className) {
-      if (!auth.currentUser) {
-        return { ok: false, reason: "not_logged_in" };
-      }
+      if (!auth.currentUser) return { ok: false, reason: "not_logged_in" };
       const docId = getClassDocId(className);
-
       try {
         const snap = await db.collection(CLOUD_CLASSES_COLLECTION).doc(docId).get();
-        if (!snap.exists) {
-          return { ok: false, reason: "not_found" };
-        }
+        if (!snap.exists) return { ok: false, reason: "not_found" };
         const data = snap.data();
         const students = Array.isArray(data.students) ? data.students : [];
         return { ok: true, students };
@@ -820,25 +582,18 @@
       }
     }
 
-    // Cloud: attendance
     async function saveAttendanceToCloud(className, dateISO, attendance) {
-      if (!auth.currentUser) {
-        return { ok: false, reason: "not_logged_in" };
-      }
+      if (!auth.currentUser) return { ok: false, reason: "not_logged_in" };
       const uid = auth.currentUser.uid;
       const email = auth.currentUser.email || "";
       const docId = getAttendanceDocId(className, dateISO);
-
       try {
         await db.collection(CLOUD_ATTENDANCE_COLLECTION).doc(docId).set({
-          className: className,
-          date: dateISO,
-          attendance: attendance,
+          className, date: dateISO, attendance,
           ownerUid: uid,
           updatedBy: email || uid,
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
-
         return { ok: true };
       } catch (error) {
         console.error("Cloud save attendance error:", error);
@@ -847,16 +602,11 @@
     }
 
     async function loadAttendanceFromCloud(className, dateISO) {
-      if (!auth.currentUser) {
-        return { ok: false, reason: "not_logged_in" };
-      }
+      if (!auth.currentUser) return { ok: false, reason: "not_logged_in" };
       const docId = getAttendanceDocId(className, dateISO);
-
       try {
         const snap = await db.collection(CLOUD_ATTENDANCE_COLLECTION).doc(docId).get();
-        if (!snap.exists) {
-          return { ok: false, reason: "not_found" };
-        }
+        if (!snap.exists) return { ok: false, reason: "not_found" };
         const data = snap.data();
         const attendance = Array.isArray(data.attendance) ? data.attendance : [];
         return { ok: true, attendance };
@@ -866,25 +616,18 @@
       }
     }
 
-    // Cloud: fees
     async function saveFeesToCloud(className, period, fees) {
-      if (!auth.currentUser) {
-        return { ok: false, reason: "not_logged_in" };
-      }
+      if (!auth.currentUser) return { ok: false, reason: "not_logged_in" };
       const uid = auth.currentUser.uid;
       const email = auth.currentUser.email || "";
       const docId = getFeesDocId(className, period);
-
       try {
         await db.collection(CLOUD_FEES_COLLECTION).doc(docId).set({
-          className: className,
-          period: period,
-          fees: fees,
+          className, period, fees,
           ownerUid: uid,
           updatedBy: email || uid,
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
-
         return { ok: true };
       } catch (error) {
         console.error("Cloud save fees error:", error);
@@ -893,16 +636,11 @@
     }
 
     async function loadFeesFromCloud(className, period) {
-      if (!auth.currentUser) {
-        return { ok: false, reason: "not_logged_in" };
-      }
+      if (!auth.currentUser) return { ok: false, reason: "not_logged_in" };
       const docId = getFeesDocId(className, period);
-
       try {
         const snap = await db.collection(CLOUD_FEES_COLLECTION).doc(docId).get();
-        if (!snap.exists) {
-          return { ok: false, reason: "not_found" };
-        }
+        if (!snap.exists) return { ok: false, reason: "not_found" };
         const data = snap.data();
         const fees = Array.isArray(data.fees) ? data.fees : [];
         return { ok: true, fees };
@@ -912,18 +650,12 @@
       }
     }
 
-    /* -----------------------------------------------
-       APP LOGIC (localStorage + cloud)
-    ------------------------------------------------ */
-
-    // Keys for localStorage
     const CLASS_KEY_PREFIX = "psh_class_";
     const ATT_KEY_PREFIX = "psh_attendance_";
     const GRADES_KEY_PREFIX = "psh_grades_";
     const FEES_KEY_PREFIX = "psh_fees_";
     const PIN_KEY = "psh_pin_v1";
 
-    // Navigation elements
     const navAttendanceBtn = document.getElementById("navAttendance");
     const navGradesBtn = document.getElementById("navGrades");
     const navFeesBtn = document.getElementById("navFees");
@@ -933,7 +665,6 @@
     const feesSection = document.getElementById("fees");
     const parentSection = document.getElementById("parent");
 
-    // Attendance elements
     const classNameEl = document.getElementById("className");
     const attDateEl = document.getElementById("attDate");
     const studentsRawEl = document.getElementById("studentsRaw");
@@ -941,7 +672,6 @@
     const studentsCountInfoEl = document.getElementById("studentsCountInfo");
     const attendanceTableBody = document.querySelector("#attendanceTable tbody");
     const attendanceSummaryEl = document.getElementById("attendanceSummary");
-
     const saveClassBtn = document.getElementById("saveClassBtn");
     const loadClassBtn = document.getElementById("loadClassBtn");
     const clearClassBtn = document.getElementById("clearClassBtn");
@@ -949,7 +679,6 @@
     const loadAttendanceBtn = document.getElementById("loadAttendanceBtn");
     const exportAttendanceBtn = document.getElementById("exportAttendanceBtn");
 
-    // Grades elements
     const gradesClassNameEl = document.getElementById("gradesClassName");
     const subjectNameEl = document.getElementById("subjectName");
     const assessmentNameEl = document.getElementById("assessmentName");
@@ -963,7 +692,6 @@
     const gradesSummaryEl = document.getElementById("gradesSummary");
     const gradesTableBody = document.querySelector("#gradesTable tbody");
 
-    // Fees elements
     const feesClassNameEl = document.getElementById("feesClassName");
     const feePeriodEl = document.getElementById("feePeriod");
     const feesLoadClassBtn = document.getElementById("feesLoadClassBtn");
@@ -975,7 +703,6 @@
     const feesSummaryEl = document.getElementById("feesSummary");
     const feesTableBody = document.querySelector("#feesTable tbody");
 
-    // Parent portal elements
     const parentClassNameEl = document.getElementById("parentClassName");
     const parentStudentSelectEl = document.getElementById("parentStudentSelect");
     const parentLoadClassBtn = document.getElementById("parentLoadClassBtn");
@@ -985,7 +712,6 @@
     const parentGradesListEl = document.getElementById("parentGradesList");
     const parentFeesListEl = document.getElementById("parentFeesList");
 
-    // Auth UI elements
     const authStatusEl = document.getElementById("authStatus");
     const showAuthFormBtn = document.getElementById("showAuthFormBtn");
     const logoutBtn = document.getElementById("logoutBtn");
@@ -996,7 +722,6 @@
     const authSignUpBtn = document.getElementById("authSignUpBtn");
     const authMessageEl = document.getElementById("authMessage");
 
-    // Lock elements
     const lockScreenEl = document.getElementById("lockScreen");
     const lockTitleEl = document.getElementById("lockTitle");
     const lockSubtitleEl = document.getElementById("lockSubtitle");
@@ -1004,6 +729,11 @@
     const lockPrimaryBtnEl = document.getElementById("lockPrimaryBtn");
     const lockResetBtnEl = document.getElementById("lockResetBtn");
     const lockMessageEl = document.getElementById("lockMessage");
+
+    const backupDownloadBtn = document.getElementById("backupDownloadBtn");
+    const backupRestoreBtn = document.getElementById("backupRestoreBtn");
+    const backupFileInput = document.getElementById("backupFileInput");
+    const backupInfoEl = document.getElementById("backupInfo");
 
     let appInitialized = false;
     let savedPin = null;
@@ -1020,28 +750,20 @@
     function storageKeyForClass(className) {
       return CLASS_KEY_PREFIX + normalizeKey(className);
     }
-
     function storageKeyForAttendance(className, dateISO) {
       return ATT_KEY_PREFIX + normalizeKey(className) + "_" + dateISO;
     }
-
     function storageKeyForGrades(className, subject, assessment) {
-      return (
-        GRADES_KEY_PREFIX +
+      return GRADES_KEY_PREFIX +
         normalizeKey(className) + "_" +
         normalizeKey(subject) + "_" +
-        normalizeKey(assessment)
-      );
+        normalizeKey(assessment);
     }
-
     function storageKeyForFees(className, period) {
-      return (
-        FEES_KEY_PREFIX +
+      return FEES_KEY_PREFIX +
         normalizeKey(className) + "_" +
-        normalizeKey(period)
-      );
+        normalizeKey(period);
     }
-
     function prettyFromKeyPart(str) {
       return str
         .split("_")
@@ -1049,7 +771,6 @@
         .map(s => s.charAt(0).toUpperCase() + s.slice(1))
         .join(" ");
     }
-
     function parseStudents(rawText) {
       const lines = rawText.split("\n");
       const students = [];
@@ -1063,7 +784,6 @@
       return students;
     }
 
-    // ---------------- AUTH (LOGIN / SIGNUP) ----------------
     function toggleAuthForm() {
       if (authFormEl.style.display === "none" || authFormEl.style.display === "") {
         authFormEl.style.display = "block";
@@ -1094,13 +814,11 @@
       const password = authPasswordEl.value.trim();
       authMessageEl.textContent = "";
       authMessageEl.className = "auth-message";
-
       if (!email || !password) {
         authMessageEl.textContent = "Please enter both email and password.";
         authMessageEl.classList.add("error");
         return;
       }
-
       auth.signInWithEmailAndPassword(email, password)
         .then(() => {
           authMessageEl.textContent = "Signed in successfully.";
@@ -1117,19 +835,16 @@
       const password = authPasswordEl.value.trim();
       authMessageEl.textContent = "";
       authMessageEl.className = "auth-message";
-
       if (!email || !password) {
         authMessageEl.textContent = "Please enter both email and password.";
         authMessageEl.classList.add("error");
         return;
       }
-
       if (password.length < 6) {
         authMessageEl.textContent = "Password should be at least 6 characters.";
         authMessageEl.classList.add("error");
         return;
       }
-
       auth.createUserWithEmailAndPassword(email, password)
         .then(() => {
           authMessageEl.textContent = "Account created and signed in.";
@@ -1153,24 +868,18 @@
         });
     }
 
-    // ---------------- ATTENDANCE / CLASS LISTS ----------------
     async function loadClassList() {
       const className = classNameEl.value.trim();
-      if (!className) {
-        alert("Please select the class.");
-        return;
-      }
+      if (!className) { alert("Please select the class."); return; }
 
       classInfoEl.textContent = "Loading class list...";
       const localKey = storageKeyForClass(className);
       let students = null;
 
-      // 1) Try cloud first if logged in
       if (auth.currentUser) {
         const cloudResult = await loadClassListFromCloud(className);
         if (cloudResult.ok && cloudResult.students.length > 0) {
           students = cloudResult.students;
-          // sync to local
           localStorage.setItem(localKey, JSON.stringify(students));
           classInfoEl.textContent = `Class list loaded from cloud and synced locally for "${className}".`;
         } else if (cloudResult.reason === "not_found") {
@@ -1182,7 +891,6 @@
         classInfoEl.textContent = "Not signed in. Using only local class list on this device.";
       }
 
-      // 2) If no students yet, try localStorage
       if (!students) {
         const saved = localStorage.getItem(localKey);
         if (saved) {
@@ -1210,10 +918,7 @@
 
     async function saveClassList() {
       const className = classNameEl.value.trim();
-      if (!className) {
-        alert("Please select the class.");
-        return;
-      }
+      if (!className) { alert("Please select the class."); return; }
       const students = parseStudents(studentsRawEl.value);
       if (students.length === 0) {
         alert("Please enter at least one student.");
@@ -1225,7 +930,6 @@
       classInfoEl.textContent = `Class list saved locally for "${className}".`;
       buildAttendanceTable(students);
 
-      // Cloud save if logged in
       if (auth.currentUser) {
         classInfoEl.textContent += " Saving to cloud...";
         const cloudResult = await saveClassListToCloud(className, students);
@@ -1241,18 +945,13 @@
 
     function clearClassList() {
       const className = classNameEl.value.trim();
-      if (!className) {
-        alert("Please select the class.");
-        return;
-      }
+      if (!className) { alert("Please select the class."); return; }
       const key = storageKeyForClass(className);
       if (!localStorage.getItem(key)) {
         alert("No class list found for this name on this device.");
         return;
       }
-      if (!confirm(`Delete the local class list for "${className}" from this device? (Cloud data will stay.)`)) {
-        return;
-      }
+      if (!confirm(`Delete the local class list for "${className}" from this device? (Cloud data will stay.)`)) return;
       localStorage.removeItem(key);
       studentsRawEl.value = "";
       studentsCountInfoEl.textContent = "";
@@ -1269,13 +968,10 @@
       }
       students.forEach((name, index) => {
         const tr = document.createElement("tr");
-
         const tdIndex = document.createElement("td");
         tdIndex.textContent = index + 1;
-
         const tdName = document.createElement("td");
         tdName.textContent = name;
-
         const tdStatus = document.createElement("td");
         const select = document.createElement("select");
         select.className = "status-select";
@@ -1285,21 +981,17 @@
           opt.textContent = status;
           select.appendChild(opt);
         });
-
         if (existingStatuses && existingStatuses[name]) {
           select.value = existingStatuses[name];
         } else {
           select.value = "Present";
         }
-
         tdStatus.appendChild(select);
-
         tr.appendChild(tdIndex);
         tr.appendChild(tdName);
         tr.appendChild(tdStatus);
         attendanceTableBody.appendChild(tr);
       });
-
       updateAttendanceSummary();
     }
 
@@ -1320,14 +1012,8 @@
     async function saveAttendance() {
       const className = classNameEl.value.trim();
       const dateVal = attDateEl.value;
-      if (!className) {
-        alert("Please select the class.");
-        return;
-      }
-      if (!dateVal) {
-        alert("Please select the date.");
-        return;
-      }
+      if (!className) { alert("Please select the class."); return; }
+      if (!dateVal) { alert("Please select the date."); return; }
       const students = parseStudents(studentsRawEl.value);
       if (students.length === 0) {
         alert("Please save a class list first.");
@@ -1341,7 +1027,6 @@
       let msg = `Attendance saved locally for ${className} on ${dateVal}.`;
       attendanceSummaryEl.textContent = attendanceSummaryEl.textContent + " (Saved locally)";
 
-      // Cloud save
       if (auth.currentUser) {
         const cloudResult = await saveAttendanceToCloud(className, dateVal, attendance);
         if (cloudResult.ok) {
@@ -1352,21 +1037,14 @@
       } else {
         msg += " Sign in if you want to sync across devices.";
       }
-
       alert(msg);
     }
 
     async function loadAttendanceForDate() {
       const className = classNameEl.value.trim();
       const dateVal = attDateEl.value;
-      if (!className) {
-        alert("Please select the class.");
-        return;
-      }
-      if (!dateVal) {
-        alert("Please select the date.");
-        return;
-      }
+      if (!className) { alert("Please select the class."); return; }
+      if (!dateVal) { alert("Please select the date."); return; }
 
       const classKey = storageKeyForClass(className);
       const classSaved = localStorage.getItem(classKey);
@@ -1375,16 +1053,13 @@
         return;
       }
       const students = JSON.parse(classSaved);
-
       let attendanceArr = null;
 
-      // 1) Try cloud first if logged in
       if (auth.currentUser) {
         const cloudResult = await loadAttendanceFromCloud(className, dateVal);
         if (cloudResult.ok && cloudResult.attendance.length > 0) {
           attendanceArr = cloudResult.attendance;
           attendanceSummaryEl.textContent = `Attendance loaded from cloud for ${className} on ${dateVal}.`;
-          // Sync to local too
           const key = storageKeyForAttendance(className, dateVal);
           localStorage.setItem(key, JSON.stringify(attendanceArr));
         } else if (cloudResult.reason === "not_found") {
@@ -1396,7 +1071,6 @@
         attendanceSummaryEl.textContent = "Not signed in. Using only local attendance on this device.";
       }
 
-      // 2) Fallback to local if needed
       if (!attendanceArr) {
         const key = storageKeyForAttendance(className, dateVal);
         const savedAtt = localStorage.getItem(key);
@@ -1409,9 +1083,7 @@
       }
 
       const statusMap = {};
-      attendanceArr.forEach((item) => {
-        statusMap[item.name] = item.status;
-      });
+      attendanceArr.forEach((item) => { statusMap[item.name] = item.status; });
       buildAttendanceTable(students, statusMap);
       updateAttendanceSummary();
     }
@@ -1436,34 +1108,20 @@
     function exportAttendanceCSV() {
       const className = classNameEl.value.trim();
       const dateVal = attDateEl.value;
-      if (!className) {
-        alert("Please select the class.");
-        return;
-      }
-      if (!dateVal) {
-        alert("Please select the date.");
-        return;
-      }
+      if (!className) { alert("Please select the class."); return; }
+      if (!dateVal) { alert("Please select the date."); return; }
       const attendance = getCurrentAttendanceFromTable();
       if (attendance.length === 0) {
         alert("No attendance data to export.");
         return;
       }
-
       const header = ["Class", "Date", "Student name", "Status"];
       const rows = attendance.map(item => [
-        className,
-        dateVal,
-        item.name,
-        item.status
+        className, dateVal, item.name, item.status
       ]);
-
       const csvContent = [header, ...rows]
-        .map(row => row
-          .map(field => `"${String(field).replace(/"/g, '""')}"`)
-          .join(","))
+        .map(row => row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(","))
         .join("\r\n");
-
       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -1475,13 +1133,9 @@
       URL.revokeObjectURL(url);
     }
 
-    // ---------------- GRADES LOGIC ----------------
     function loadClassForGrades() {
       const className = gradesClassNameEl.value.trim();
-      if (!className) {
-        alert("Please select the class.");
-        return;
-      }
+      if (!className) { alert("Please select the class."); return; }
       const key = storageKeyForClass(className);
       const saved = localStorage.getItem(key);
       if (!saved) {
@@ -1503,32 +1157,25 @@
       }
       students.forEach((name, index) => {
         const tr = document.createElement("tr");
-
         const tdIndex = document.createElement("td");
         tdIndex.textContent = index + 1;
-
         const tdName = document.createElement("td");
         tdName.textContent = name;
-
         const tdScore = document.createElement("td");
         const input = document.createElement("input");
         input.type = "number";
         input.className = "grade-input";
         input.min = "0";
-        if (maxScoreEl.value) {
-          input.max = maxScoreEl.value;
-        }
+        if (maxScoreEl.value) input.max = maxScoreEl.value;
         if (existingScores && Object.prototype.hasOwnProperty.call(existingScores, name)) {
           input.value = existingScores[name];
         }
         tdScore.appendChild(input);
-
         tr.appendChild(tdIndex);
         tr.appendChild(tdName);
         tr.appendChild(tdScore);
         gradesTableBody.appendChild(tr);
       });
-
       updateGradesSummary();
     }
 
@@ -1543,9 +1190,7 @@
         let score = null;
         if (input && input.value !== "") {
           const n = parseFloat(input.value);
-          if (!isNaN(n)) {
-            score = n;
-          }
+          if (!isNaN(n)) score = n;
         }
         result.push({ name, score });
       });
@@ -1556,18 +1201,9 @@
       const className = gradesClassNameEl.value.trim();
       const subject = subjectNameEl.value.trim();
       const assessment = assessmentNameEl.value.trim();
-      if (!className) {
-        alert("Please select the class.");
-        return;
-      }
-      if (!subject) {
-        alert("Please enter the subject.");
-        return;
-      }
-      if (!assessment) {
-        alert("Please enter the assessment name.");
-        return;
-      }
+      if (!className) { alert("Please select the class."); return; }
+      if (!subject) { alert("Please enter the subject."); return; }
+      if (!assessment) { alert("Please enter the assessment name."); return; }
 
       const rows = gradesTableBody.querySelectorAll("tr");
       if (rows.length === 0) {
@@ -1583,12 +1219,8 @@
       }
 
       const maxScore = maxScoreEl.value ? parseFloat(maxScoreEl.value) : null;
-
       const key = storageKeyForGrades(className, subject, assessment);
-      const payload = {
-        grades,
-        maxScore: maxScore
-      };
+      const payload = { grades, maxScore };
       localStorage.setItem(key, JSON.stringify(payload));
       updateGradesSummary();
       alert(`Grades saved for ${className} – ${subject} – ${assessment}.`);
@@ -1599,18 +1231,9 @@
       const className = gradesClassNameEl.value.trim();
       const subject = subjectNameEl.value.trim();
       const assessment = assessmentNameEl.value.trim();
-      if (!className) {
-        alert("Please select the class.");
-        return;
-      }
-      if (!subject) {
-        alert("Please enter the subject.");
-        return;
-      }
-      if (!assessment) {
-        alert("Please enter the assessment name.");
-        return;
-      }
+      if (!className) { alert("Please select the class."); return; }
+      if (!subject) { alert("Please enter the subject."); return; }
+      if (!assessment) { alert("Please enter the assessment name."); return; }
 
       const classKey = storageKeyForClass(className);
       const classSaved = localStorage.getItem(classKey);
@@ -1632,15 +1255,10 @@
       const payload = JSON.parse(saved);
       const gradesArr = payload.grades || [];
       const savedMax = payload.maxScore || null;
-      if (savedMax !== null) {
-        maxScoreEl.value = savedMax;
-      }
+      if (savedMax !== null) maxScoreEl.value = savedMax;
 
       const scoreMap = {};
-      gradesArr.forEach((g) => {
-        scoreMap[g.name] = g.score;
-      });
-
+      gradesArr.forEach((g) => { scoreMap[g.name] = g.score; });
       buildGradesTable(students, scoreMap);
       gradesInfoEl.textContent = `Loaded grades for "${className}" – ${subject} – ${assessment}.`;
       updateGradesSummary();
@@ -1673,7 +1291,6 @@
         gradesSummaryEl.textContent = "No students loaded yet.";
         return;
       }
-
       if (countWithScore === 0) {
         gradesSummaryEl.textContent =
           `Students: ${totalStudents} | No scores entered yet.`;
@@ -1691,7 +1308,6 @@
         const avgPercent = (avg / maxScore) * 100;
         text += ` | Average: ${avgPercent.toFixed(1)}% of ${maxScore}`;
       }
-
       gradesSummaryEl.textContent = text;
     }
 
@@ -1699,18 +1315,9 @@
       const className = gradesClassNameEl.value.trim();
       const subject = subjectNameEl.value.trim();
       const assessment = assessmentNameEl.value.trim();
-      if (!className) {
-        alert("Please select the class.");
-        return;
-      }
-      if (!subject) {
-        alert("Please enter the subject.");
-        return;
-      }
-      if (!assessment) {
-        alert("Please enter the assessment name.");
-        return;
-      }
+      if (!className) { alert("Please select the class."); return; }
+      if (!subject) { alert("Please enter the subject."); return; }
+      if (!assessment) { alert("Please enter the assessment name."); return; }
 
       const grades = getCurrentGradesFromTable();
       if (grades.length === 0) {
@@ -1719,27 +1326,19 @@
       }
 
       const maxScore = maxScoreEl.value ? parseFloat(maxScoreEl.value) : null;
-
       const header = ["Class", "Subject", "Assessment", "Student name", "Score", "Max score"];
       const rows = grades.map(item => [
-        className,
-        subject,
-        assessment,
+        className, subject, assessment,
         item.name,
         item.score !== null ? item.score : "",
         maxScore !== null ? maxScore : ""
       ]);
-
       const csvContent = [header, ...rows]
-        .map(row => row
-          .map(field => `"${String(field).replace(/"/g, '""')}"`)
-          .join(","))
+        .map(row => row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(","))
         .join("\r\n");
-
       const safeClass = className.replace(/\s+/g, "_");
       const safeSubject = subject.replace(/\s+/g, "_");
       const safeAssessment = assessment.replace(/\s+/g, "_");
-
       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -1751,13 +1350,9 @@
       URL.revokeObjectURL(url);
     }
 
-    // ---------------- FEES LOGIC (LOCAL + CLOUD) ----------------
     function loadClassForFees() {
       const className = feesClassNameEl.value.trim();
-      if (!className) {
-        alert("Please select the class.");
-        return;
-      }
+      if (!className) { alert("Please select the class."); return; }
       const key = storageKeyForClass(className);
       const saved = localStorage.getItem(key);
       if (!saved) {
@@ -1779,25 +1374,20 @@
       }
       students.forEach((name, index) => {
         const tr = document.createElement("tr");
-
         const tdIndex = document.createElement("td");
         tdIndex.textContent = index + 1;
-
         const tdName = document.createElement("td");
         tdName.textContent = name;
-
         const tdTotal = document.createElement("td");
         const inputTotal = document.createElement("input");
         inputTotal.type = "number";
         inputTotal.className = "fee-input fee-total";
         inputTotal.min = "0";
-
         const tdPaid = document.createElement("td");
         const inputPaid = document.createElement("input");
         inputPaid.type = "number";
         inputPaid.className = "fee-input fee-paid";
         inputPaid.min = "0";
-
         const tdRemaining = document.createElement("td");
         tdRemaining.className = "fee-remaining";
         tdRemaining.textContent = "";
@@ -1820,7 +1410,6 @@
         tr.appendChild(tdRemaining);
         feesTableBody.appendChild(tr);
       });
-
       updateAllFeesRemaining();
       updateFeesSummary();
     }
@@ -1829,10 +1418,8 @@
       const totalInput = tr.querySelector(".fee-total");
       const paidInput = tr.querySelector(".fee-paid");
       const remainingCell = tr.querySelector(".fee-remaining");
-
       const total = totalInput && totalInput.value !== "" ? parseFloat(totalInput.value) : 0;
       const paid = paidInput && paidInput.value !== "" ? parseFloat(paidInput.value) : 0;
-
       if (isNaN(total) || isNaN(paid)) {
         remainingCell.textContent = "";
         return;
@@ -1855,10 +1442,8 @@
         const totalInput = tr.querySelector(".fee-total");
         const paidInput = tr.querySelector(".fee-paid");
         const name = nameCell.textContent.trim();
-
         let total = null;
         let paid = null;
-
         if (totalInput && totalInput.value !== "") {
           const n = parseFloat(totalInput.value);
           if (!isNaN(n)) total = n;
@@ -1867,7 +1452,6 @@
           const p = parseFloat(paidInput.value);
           if (!isNaN(p)) paid = p;
         }
-
         result.push({ name, total, paid });
       });
       return result;
@@ -1876,14 +1460,8 @@
     async function saveFees() {
       const className = feesClassNameEl.value.trim();
       const period = feePeriodEl.value.trim();
-      if (!className) {
-        alert("Please select the class.");
-        return;
-      }
-      if (!period) {
-        alert("Please enter the fee period / term.");
-        return;
-      }
+      if (!className) { alert("Please select the class."); return; }
+      if (!period) { alert("Please enter the fee period / term."); return; }
 
       const rows = feesTableBody.querySelectorAll("tr");
       if (rows.length === 0) {
@@ -1906,7 +1484,6 @@
       let msg = `Fees saved locally for ${className} – ${period}.`;
       feesInfoEl.textContent = `Fees saved locally for "${className}" – ${period}.`;
 
-      // Cloud save
       if (auth.currentUser) {
         feesInfoEl.textContent += " Saving to cloud...";
         const cloudResult = await saveFeesToCloud(className, period, fees);
@@ -1921,21 +1498,14 @@
         feesInfoEl.textContent += " Sign in if you want cloud backup and multi-device access.";
         msg += " Sign in if you want to sync across devices.";
       }
-
       alert(msg);
     }
 
     async function loadFeesData() {
       const className = feesClassNameEl.value.trim();
       const period = feePeriodEl.value.trim();
-      if (!className) {
-        alert("Please select the class.");
-        return;
-      }
-      if (!period) {
-        alert("Please enter the fee period / term.");
-        return;
-      }
+      if (!className) { alert("Please select the class."); return; }
+      if (!period) { alert("Please enter the fee period / term."); return; }
 
       const classKey = storageKeyForClass(className);
       const classSaved = localStorage.getItem(classKey);
@@ -1944,16 +1514,13 @@
         return;
       }
       const students = JSON.parse(classSaved);
-
       let feesArr = null;
 
-      // 1) Try cloud first if logged in
       if (auth.currentUser) {
         const cloudResult = await loadFeesFromCloud(className, period);
         if (cloudResult.ok && cloudResult.fees.length > 0) {
           feesArr = cloudResult.fees;
           feesInfoEl.textContent = `Fees loaded from cloud for "${className}" – ${period}.`;
-          // Sync to local
           const key = storageKeyForFees(className, period);
           localStorage.setItem(key, JSON.stringify({ fees: feesArr }));
         } else if (cloudResult.reason === "not_found") {
@@ -1965,7 +1532,6 @@
         feesInfoEl.textContent = "Not signed in. Using only local fees on this device.";
       }
 
-      // 2) Fallback to local if needed
       if (!feesArr) {
         const key = storageKeyForFees(className, period);
         const saved = localStorage.getItem(key);
@@ -1982,12 +1548,8 @@
 
       const dataMap = {};
       feesArr.forEach((f) => {
-        dataMap[f.name] = {
-          total: f.total,
-          paid: f.paid
-        };
+        dataMap[f.name] = { total: f.total, paid: f.paid };
       });
-
       buildFeesTable(students, dataMap);
       updateFeesSummary();
     }
@@ -2016,7 +1578,6 @@
         feesSummaryEl.textContent = "No students loaded yet.";
         return;
       }
-
       let totalFeeSum = 0;
       let totalPaidSum = 0;
       let totalRemainSum = 0;
@@ -2035,35 +1596,25 @@
       });
 
       totalRemainSum = totalFeeSum - totalPaidSum;
-
       let text =
         `Students: ${fees.length} | Total fee set (sum): ${totalFeeSum.toFixed(2)} | Total paid (sum): ${totalPaidSum.toFixed(2)} | Remaining (sum): ${totalRemainSum.toFixed(2)}`;
-
       if (countWithTotal === 0 && countWithPaid === 0) {
         text = `Students: ${fees.length} | No fee amounts entered yet.`;
       }
-
       feesSummaryEl.textContent = text;
     }
 
     function exportFeesCSV() {
       const className = feesClassNameEl.value.trim();
       const period = feePeriodEl.value.trim();
-      if (!className) {
-        alert("Please select the class.");
-        return;
-      }
-      if (!period) {
-        alert("Please enter the fee period / term.");
-        return;
-      }
+      if (!className) { alert("Please select the class."); return; }
+      if (!period) { alert("Please enter the fee period / term."); return; }
 
       const fees = getCurrentFeesFromTable();
       if (fees.length === 0) {
         alert("No students in the table.");
         return;
       }
-
       const header = ["Class", "Period", "Student name", "Total fee", "Paid", "Remaining"];
       const rows = fees.map(item => {
         const total = typeof item.total === "number" ? item.total : "";
@@ -2071,25 +1622,13 @@
         const remaining = (typeof item.total === "number" && typeof item.paid === "number")
           ? (item.total - item.paid).toFixed(2)
           : "";
-        return [
-          className,
-          period,
-          item.name,
-          total,
-          paid,
-          remaining
-        ];
+        return [className, period, item.name, total, paid, remaining];
       });
-
       const csvContent = [header, ...rows]
-        .map(row => row
-          .map(field => `"${String(field).replace(/"/g, '""')}"`)
-          .join(","))
+        .map(row => row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(","))
         .join("\r\n");
-
       const safeClass = className.replace(/\s+/g, "_");
       const safePeriod = period.replace(/\s+/g, "_");
-
       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -2101,13 +1640,9 @@
       URL.revokeObjectURL(url);
     }
 
-    // ---------------- PARENT PORTAL LOGIC ----------------
     function loadClassForParent() {
       const className = parentClassNameEl.value.trim();
-      if (!className) {
-        alert("Please select the class.");
-        return;
-      }
+      if (!className) { alert("Please select the class."); return; }
       const key = storageKeyForClass(className);
       const saved = localStorage.getItem(key);
       if (!saved) {
@@ -2132,23 +1667,15 @@
     function loadParentData() {
       const className = parentClassNameEl.value.trim();
       const studentName = parentStudentSelectEl.value;
-      if (!className) {
-        alert("Please select the class.");
-        return;
-      }
-      if (!studentName) {
-        alert("Please select a student.");
-        return;
-      }
+      if (!className) { alert("Please select the class."); return; }
+      if (!studentName) { alert("Please select a student."); return; }
 
       const classLower = normalizeKey(className);
       parentInfoEl.textContent = `Summary for ${studentName} in "${className}".`;
-
       parentAttendanceListEl.innerHTML = "";
       parentGradesListEl.innerHTML = "";
       parentFeesListEl.innerHTML = "";
 
-      // Attendance history (local only; cloud is synced into local when loaded)
       const attPrefix = ATT_KEY_PREFIX + classLower + "_";
       const attItems = [];
       for (let i = 0; i < localStorage.length; i++) {
@@ -2177,7 +1704,6 @@
         parentAttendanceListEl.appendChild(ul);
       }
 
-      // Grades
       const gradesPrefix = GRADES_KEY_PREFIX + classLower + "_";
       const gradeItems = [];
       for (let i = 0; i < localStorage.length; i++) {
@@ -2221,7 +1747,6 @@
         parentGradesListEl.appendChild(ul);
       }
 
-      // Fees
       const feesPrefix = FEES_KEY_PREFIX + classLower + "_";
       const feeItems = [];
       for (let i = 0; i < localStorage.length; i++) {
@@ -2263,7 +1788,6 @@
       }
     }
 
-    // ---------------- NAVIGATION ----------------
     function switchToAttendance() {
       navAttendanceBtn.classList.add("active");
       navGradesBtn.classList.remove("active");
@@ -2274,7 +1798,6 @@
       feesSection.style.display = "none";
       parentSection.style.display = "none";
     }
-
     function switchToGrades() {
       navGradesBtn.classList.add("active");
       navAttendanceBtn.classList.remove("active");
@@ -2285,7 +1808,6 @@
       feesSection.style.display = "none";
       parentSection.style.display = "none";
     }
-
     function switchToFees() {
       navFeesBtn.classList.add("active");
       navAttendanceBtn.classList.remove("active");
@@ -2296,7 +1818,6 @@
       feesSection.style.display = "block";
       parentSection.style.display = "none";
     }
-
     function switchToParent() {
       navParentBtn.classList.add("active");
       navAttendanceBtn.classList.remove("active");
@@ -2308,10 +1829,66 @@
       parentSection.style.display = "block";
     }
 
-    // ---------------- PIN / LOCK LOGIC ----------------
-    function loadPin() {
-      savedPin = localStorage.getItem(PIN_KEY);
+    function createBackupJson() {
+      const backup = {};
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith("psh_")) {
+          backup[key] = localStorage.getItem(key);
+        }
+      }
+      if (Object.keys(backup).length === 0) {
+        backupInfoEl.textContent = "No Private School Hub data found in this browser yet.";
+        return null;
+      }
+      backupInfoEl.textContent = `Backup ready with ${Object.keys(backup).length} items.`;
+      return JSON.stringify(backup, null, 2);
     }
+
+    function downloadBackupFile() {
+      const json = createBackupJson();
+      if (!json) return;
+      const blob = new Blob([json], { type: "application/json;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, "0");
+      const d = String(now.getDate()).padStart(2, "0");
+      a.href = url;
+      a.download = `private_school_hub_backup_${y}${m}${d}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      backupInfoEl.textContent = "Backup file downloaded successfully. Keep it in a safe place.";
+    }
+
+    function restoreBackupData(data) {
+      if (!data || typeof data !== "object") {
+        backupInfoEl.textContent = "Invalid backup file.";
+        return;
+      }
+      const confirmRestore = confirm(
+        "Restoring a backup will overwrite existing Private School Hub data on this device. Continue?"
+      );
+      if (!confirmRestore) {
+        backupInfoEl.textContent = "Restore cancelled.";
+        return;
+      }
+      let count = 0;
+      for (const key in data) {
+        if (key.startsWith("psh_") && typeof data[key] === "string") {
+          localStorage.setItem(key, data[key]);
+          count++;
+        }
+      }
+      backupInfoEl.textContent = `Backup restored: ${count} items written. The page will now reload.`;
+      alert("Backup restored. The page will reload to apply changes.");
+      location.reload();
+    }
+
+    function loadPin() { savedPin = localStorage.getItem(PIN_KEY); }
 
     function showLockScreen() {
       loadPin();
@@ -2334,9 +1911,7 @@
       setTimeout(() => lockPinInputEl.focus(), 50);
     }
 
-    function hideLockScreen() {
-      lockScreenEl.style.display = "none";
-    }
+    function hideLockScreen() { lockScreenEl.style.display = "none"; }
 
     function handleLockPrimary() {
       const pin = lockPinInputEl.value.trim();
@@ -2348,7 +1923,6 @@
         lockMessageEl.textContent = "Use only numbers.";
         return;
       }
-
       if (!isUnlockMode) {
         localStorage.setItem(PIN_KEY, pin);
         savedPin = pin;
@@ -2373,11 +1947,9 @@
       location.reload();
     }
 
-    // ---------------- APP INIT ----------------
     function initAppLogic() {
       attDateEl.value = todayISO();
 
-      // Attendance / class lists
       saveClassBtn.addEventListener("click", () => { saveClassList(); });
       loadClassBtn.addEventListener("click", () => { loadClassList(); });
       clearClassBtn.addEventListener("click", clearClassList);
@@ -2385,24 +1957,18 @@
       loadAttendanceBtn.addEventListener("click", () => { loadAttendanceForDate(); });
       exportAttendanceBtn.addEventListener("click", exportAttendanceCSV);
       attendanceTableBody.addEventListener("change", (e) => {
-        if (e.target.tagName === "SELECT") {
-          updateAttendanceSummary();
-        }
+        if (e.target.tagName === "SELECT") updateAttendanceSummary();
       });
 
-      // Grades
       gradesLoadClassBtn.addEventListener("click", loadClassForGrades);
       gradesLoadGradesBtn.addEventListener("click", loadGrades);
       gradesClearScoresBtn.addEventListener("click", clearScores);
       gradesSaveBtn.addEventListener("click", saveGrades);
       gradesExportBtn.addEventListener("click", exportGradesCSV);
       gradesTableBody.addEventListener("input", (e) => {
-        if (e.target.classList.contains("grade-input")) {
-          updateGradesSummary();
-        }
+        if (e.target.classList.contains("grade-input")) updateGradesSummary();
       });
 
-      // Fees
       feesLoadClassBtn.addEventListener("click", loadClassForFees);
       feesLoadDataBtn.addEventListener("click", () => { loadFeesData(); });
       feesClearAmountsBtn.addEventListener("click", clearFeesAmounts);
@@ -2415,25 +1981,40 @@
         }
       });
 
-      // Parent portal
       parentLoadClassBtn.addEventListener("click", loadClassForParent);
       parentLoadDataBtn.addEventListener("click", loadParentData);
 
-      // Navigation
       navAttendanceBtn.addEventListener("click", switchToAttendance);
       navGradesBtn.addEventListener("click", switchToGrades);
       navFeesBtn.addEventListener("click", switchToFees);
       navParentBtn.addEventListener("click", switchToParent);
 
-      // Auth UI events
       showAuthFormBtn.addEventListener("click", toggleAuthForm);
       authSignInBtn.addEventListener("click", handleSignIn);
       authSignUpBtn.addEventListener("click", handleSignUp);
       logoutBtn.addEventListener("click", handleLogout);
 
-      // Listen to auth state changes
-      auth.onAuthStateChanged((user) => {
-        updateAuthUI(user);
+      auth.onAuthStateChanged((user) => { updateAuthUI(user); });
+
+      backupDownloadBtn.addEventListener("click", downloadBackupFile);
+      backupRestoreBtn.addEventListener("click", () => { backupFileInput.click(); });
+      backupFileInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) {
+          backupInfoEl.textContent = "No file selected.";
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const data = JSON.parse(reader.result);
+            restoreBackupData(data);
+          } catch (err) {
+            console.error("Backup restore error:", err);
+            backupInfoEl.textContent = "Could not read backup file (invalid JSON).";
+          }
+        };
+        reader.readAsText(file);
       });
     }
 
@@ -2447,9 +2028,7 @@
       lockPrimaryBtnEl.addEventListener("click", handleLockPrimary);
       lockResetBtnEl.addEventListener("click", handleLockReset);
       lockPinInputEl.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
-          handleLockPrimary();
-        }
+        if (e.key === "Enter") handleLockPrimary();
       });
       showLockScreen();
     }
